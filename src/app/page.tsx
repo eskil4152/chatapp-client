@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -58,6 +59,13 @@ export default function Home() {
           >
             Documentation
           </a>
+
+          <Link href={{
+            pathname: "/login",
+          }}
+          >
+            <p>Log in</p>
+          </Link>
         </div>
       </main>
     </div>

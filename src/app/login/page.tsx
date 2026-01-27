@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import LogInAPI from "@/src/api/LoginAPI";
-import { useState } from "react";
+import React, { useState } from "react";
+import {redirect} from "next/navigation";
 
 export default function Page() {
     const [username, setUsername] = useState("");
@@ -22,12 +23,13 @@ export default function Page() {
         const data = await LogInAPI(username, password);
 
         if (data.status === 200) {
-            setError("");
-            window.location.href = "/account";
+            //setError("");
+            //window.location.href = "/account";
+            redirect("/")
         } else if (data.status === 401) {
             setError("Wrong Password");
         } else {
-            setError("An error occured");
+            setError("An error occurred");
         }
     }
 

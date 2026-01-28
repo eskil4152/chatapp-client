@@ -28,14 +28,5 @@ export default async function Home() {
   }
 
   const rooms: Room[] = await res.json();
-  if (rooms.length < 1) {
-    return (
-      <div>
-        <p>No rooms :(</p>
-        <p>Join a room! TODO</p>
-      </div>
-    );
-  }
-
   return <RoomsList rooms={rooms} />;
 }

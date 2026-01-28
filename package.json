@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "br": "npm run build && npm run start",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@next/env": "^16.1.6",
     "next": "16.1.5",
     "react": "19.2.3",
     "react-dom": "19.2.3"

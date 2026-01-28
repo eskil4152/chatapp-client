@@ -1,13 +1,7 @@
-import Link from "next/link";
-
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import RoomsList from "@/src/app/RoomsList";
-
-type Room = {
-  id: string;
-  name: string;
-};
+import GetRoomsAPI from "@/src/api/GetRoomsAPI";
 
 export default async function Home() {
   const auth = (await cookies()).get("AUTH")?.value;
@@ -15,18 +9,5 @@ export default async function Home() {
     redirect("/login");
   }
 
-  const res = await fetch("http://localhost:5050/api/rooms/", {
-    method: "get",
-    headers: {
-      Cookie: `AUTH=${auth}`,
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    redirect("/login");
-  }
-
-  const rooms: Room[] = await res.json();
-  return <RoomsList rooms={rooms} />;
+  redirect("/rooms");
 }

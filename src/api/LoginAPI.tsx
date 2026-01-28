@@ -1,5 +1,5 @@
 export default async function LogInAPI(username: string, password: string) {
-  return await fetch(`http://localhost:5050/api/login`, {
+  return await fetch(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/login`, {
     method: "post",
     headers: {
       "Content-Type": "application/json",

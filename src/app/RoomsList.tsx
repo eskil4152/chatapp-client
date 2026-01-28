@@ -12,20 +12,6 @@ type Room = {
 export default function RoomsList({ rooms }: { rooms: Room[] }) {
   const router = useRouter();
 
-  /*return (
-    <ul>
-      {rooms.map((room) => (
-        <li
-          key={room.id}
-          onClick={() => router.push(`/rooms/${room.id}`)}
-          style={{ cursor: "pointer" }}
-        >
-          {room.name}
-        </li>
-      ))}
-    </ul>
-  );*/
-
   if (rooms.length === 0) {
     return (
       <div>
@@ -34,7 +20,7 @@ export default function RoomsList({ rooms }: { rooms: Room[] }) {
         <Link
           className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
           href={{
-            pathname: "/room/join",
+            pathname: "/rooms/join",
           }}
         >
           <p>Join a room</p>
@@ -43,7 +29,7 @@ export default function RoomsList({ rooms }: { rooms: Room[] }) {
         <Link
           className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
           href={{
-            pathname: "/room/make",
+            pathname: "/rooms/make",
           }}
         >
           <p>Make a new room</p>
@@ -72,7 +58,7 @@ export default function RoomsList({ rooms }: { rooms: Room[] }) {
       <Link
         className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
         href={{
-          pathname: "/room/join",
+          pathname: "/rooms/join",
         }}
       >
         <p>Join a room</p>
@@ -81,7 +67,7 @@ export default function RoomsList({ rooms }: { rooms: Room[] }) {
       <Link
         className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
         href={{
-          pathname: "/room/make",
+          pathname: "/rooms/make",
         }}
       >
         <p>Make a new room</p>

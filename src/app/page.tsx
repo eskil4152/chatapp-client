@@ -32,6 +32,7 @@ export default async function Home() {
     return (
       <div>
         <p>No rooms :(</p>
+        <p>Join a room! TODO</p>
       </div>
     );
   }

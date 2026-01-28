@@ -1,0 +1,92 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+
+export default function ChatPage() {
+  const params = useParams();
+  const roomId = params.id;
+
+  const [message, setMessage] = useState("");
+
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:5050/ws");
+
+    ws.onopen = () => {
+      ws.send(
+        JSON.stringify({
+          type: "JOIN",
+          roomId: roomId,
+        }),
+      );
+    };
+
+    ws.onmessage = (event) => {
+      const { username, type, message } = JSON.parse(event.data);
+
+      console.log("Message", event.data);
+      document.getElementById("messages")!.innerText +=
+        `${username}: ${message}\r\n`;
+    };
+
+    wsRef.current = ws;
+
+    return () => {
+      if (wsRef.current && wsRef.current.readyState == WebSocket.OPEN) {
+        ws.send(
+          JSON.stringify({
+            type: "LEAVE",
+            roomId: roomId,
+          }),
+        );
+        ws.close();
+      }
+    };
+  }, [roomId]);
+
+  return (
+    <div className="text-center">
+      <h2>Room {roomId}</h2>
+      <hr />
+      <div id={"messages"}></div>
+      <hr />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!message || !wsRef.current) return;
+
+          wsRef.current.send(
+            JSON.stringify({
+              type: "MESSAGE",
+              roomId: roomId,
+              message: message,
+            }),
+          );
+
+          setMessage("");
+        }}
+      >
+        <input
+          type="text"
+          id="message"
+          width={10}
+          height={5}
+          placeholder="Enter message"
+          className="border-2 border-black my-2 p-[3px] dark:text-black"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+
+        <br />
+
+        <div className="flex justify-center gap-10">
+          <button className="border-2 border-black px-4 rounded-full mt-2 dark:border-white">
+            Send
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

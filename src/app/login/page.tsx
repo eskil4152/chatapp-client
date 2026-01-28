@@ -68,17 +68,17 @@ export default function Page() {
           <button className="border-2 border-black px-4 rounded-full mt-2 dark:border-white">
             Log In
           </button>
-
-          <Link
-            className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
-            href={{
-              pathname: "/register",
-            }}
-          >
-            <p>Register</p>
-          </Link>
         </div>
       </form>
+
+      <Link
+        className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
+        href={{
+          pathname: "/register",
+        }}
+      >
+        <p>Register</p>
+      </Link>
 
       <br />
 

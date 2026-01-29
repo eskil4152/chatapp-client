@@ -8,6 +8,7 @@ export default function ChatPage() {
   const roomId = params.id;
 
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<string[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -26,9 +27,8 @@ export default function ChatPage() {
     ws.onmessage = (event) => {
       const { username, type, message } = JSON.parse(event.data);
 
-      console.log("Message", event.data);
-      document.getElementById("messages")!.innerText +=
-        `${username}: ${message}\r\n`;
+      const new_message = `${username}: ${message}`;
+      setMessages((messages) => [...messages, new_message]);
     };
 
     wsRef.current = ws;
@@ -50,7 +50,7 @@ export default function ChatPage() {
     <div className="text-center">
       <h2>Room {roomId}</h2>
       <hr />
-      <div id={"messages"}></div>
+      <div>{messages}</div>
       <hr />
       <form
         onSubmit={(e) => {

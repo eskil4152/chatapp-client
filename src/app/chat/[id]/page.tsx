@@ -25,9 +25,11 @@ export default function ChatPage() {
     };
 
     ws.onmessage = (event) => {
-      const { username, type, message } = JSON.parse(event.data);
+      const { username, content } = JSON.parse(event.data);
 
-      const new_message = `${username}: ${message}`;
+      console.log(JSON.parse(event.data));
+
+      const new_message = `${username}: ${content}`;
       setMessages((messages) => [...messages, new_message]);
     };
 
@@ -50,7 +52,11 @@ export default function ChatPage() {
     <div className="text-center">
       <h2>Room {roomId}</h2>
       <hr />
-      <div>{messages}</div>
+      <div>
+        {messages.map((m, i) => (
+          <div key={i}>{m}</div>
+        ))}
+      </div>
       <hr />
       <form
         onSubmit={(e) => {

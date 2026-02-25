@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import MakeRoomAPI from "@/src/api/MakeRoomAPI";
 
 export default function AddRoom() {
+  const router = useRouter();
+
   const [roomName, setRoomName] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -13,7 +15,7 @@ export default function AddRoom() {
     const data = await MakeRoomAPI(roomName);
 
     if (data.status === 200) {
-      redirect("/");
+      router.replace("/rooms");
     } else if (data.status === 401) {
     } else {
     }

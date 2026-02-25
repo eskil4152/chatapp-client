@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import RegisterAPI from "@/src/api/RegisterAPI";
 
 export default function Page() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,7 +25,7 @@ export default function Page() {
 
     if (data.status === 201) {
       //setError("");
-      redirect("/");
+      router.replace("/");
     } else if (data.status === 409) {
       setError("Username is taken");
     } else {

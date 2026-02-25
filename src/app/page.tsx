@@ -1,11 +1,5 @@
-import { redirect } from "next/navigation";
+import HomeClient from "@/src/app/HomeClient";
 
 export default async function Home() {
-  const auth = localStorage.getItem("AUTH");
-
-  if (!auth) {
-    redirect("/login");
-  }
-
-  redirect("/rooms");
+  return <HomeClient />;
 }

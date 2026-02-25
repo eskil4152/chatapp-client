@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import JoinRoomAPI from "@/src/api/JoinRoomAPI";
 
 export default function AddRoom() {
+  const router = useRouter();
   const [roomId, setRoomId] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -13,7 +14,7 @@ export default function AddRoom() {
     const data = await JoinRoomAPI(roomId);
 
     if (data.status === 200) {
-      redirect("/");
+      router.replace("/");
     } else if (data.status === 401) {
     } else {
     }

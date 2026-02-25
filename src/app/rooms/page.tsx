@@ -2,10 +2,12 @@
 
 import GetRoomsAPI from "@/src/api/GetRoomsAPI";
 import React from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Rooms() {
+  const router = useRouter();
+
   type Room = {
     id: string;
     name: string;
@@ -31,7 +33,7 @@ export default function Rooms() {
             <div
               key={room.id}
               onClick={() => {
-                redirect(`/chat?id=${room.id}`);
+                router.replace(`/chat?id=${room.id}`);
               }}
             >
               <h4>{room.name}</h4>

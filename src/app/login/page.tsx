@@ -3,9 +3,11 @@
 import Link from "next/link";
 import LogInAPI from "@/src/api/LoginAPI";
 import React, { useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,7 +27,7 @@ export default function Page() {
     if (data.status === 200) {
       //setError("");
       //window.location.href = "/account";
-      redirect("/");
+      router.replace("/");
     } else if (data.status === 401) {
       setError("Wrong Password");
     } else {

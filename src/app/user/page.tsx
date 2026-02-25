@@ -58,7 +58,7 @@ export default function UserInfo() {
     );
     if (res.ok) {
       alert("Profile updated!");
-      setEditing(false); // return to read-only
+      setEditing(false);
     } else {
       alert("Failed to update profile");
     }

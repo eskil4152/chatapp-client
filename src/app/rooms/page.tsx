@@ -31,7 +31,7 @@ export default function Rooms() {
             <div
               key={room.id}
               onClick={() => {
-                redirect(`/chat/${room.id}`);
+                redirect(`/chat?id=${room.id}`);
               }}
             >
               <h4>{room.name}</h4>

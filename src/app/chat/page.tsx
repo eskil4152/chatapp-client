@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function ChatPage() {
-  const params = useParams();
-  const roomId = params.id;
+  const searchParams = useSearchParams();
+  const roomId = searchParams.get("id");
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);

@@ -13,7 +13,7 @@ export default function ChatClient() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:5050/ws");
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_URL}/ws`);
 
     ws.onopen = () => {
       ws.send(

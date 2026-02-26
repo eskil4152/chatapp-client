@@ -14,6 +14,7 @@ export default function ChatClient() {
 
   useEffect(() => {
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_URL}/ws`);
+    let pingTimer: ReturnType<typeof setInterval> | null = null;
 
     ws.onopen = () => {
       ws.send(
@@ -22,6 +23,12 @@ export default function ChatClient() {
           roomId: roomId,
         }),
       );
+
+      pingTimer = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "PING" }));
+        }
+      }, 25000);
     };
 
     ws.onmessage = (event) => {
@@ -36,6 +43,8 @@ export default function ChatClient() {
     wsRef.current = ws;
 
     return () => {
+      if (pingTimer) clearInterval(pingTimer);
+
       if (wsRef.current && wsRef.current.readyState == WebSocket.OPEN) {
         ws.send(
           JSON.stringify({

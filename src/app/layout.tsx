@@ -40,7 +40,7 @@ export default function RootLayout({
         <Link
           className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
           href={{
-            pathname: "/",
+            pathname: "/rooms",
           }}
         >
           <p>My rooms</p>

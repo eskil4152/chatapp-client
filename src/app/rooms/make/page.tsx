@@ -8,11 +8,12 @@ export default function AddRoom() {
   const router = useRouter();
 
   const [roomName, setRoomName] = useState("");
+  const [encryption, setEncryption] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await MakeRoomAPI(roomName);
+    const data = await MakeRoomAPI(roomName, encryption);
 
     if (data.status === 201) {
       router.replace("/rooms");
@@ -35,6 +36,16 @@ export default function AddRoom() {
           value={roomName}
           onChange={(e) => setRoomName(e.target.value)}
         />
+
+        <br />
+
+        <input
+          type="button"
+          id="encrypted"
+          value={"Encryption"}
+          onClick={(e) => setEncryption(!encryption)}
+        />
+        <p>Encryption currently set to {encryption ? "True" : "False"}</p>
 
         <br />
 

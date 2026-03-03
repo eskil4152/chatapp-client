@@ -1,4 +1,7 @@
-export default async function MakeRoomAPI(roomName: string) {
+export default async function MakeRoomAPI(
+  roomName: string,
+  encryption: boolean,
+) {
   return await fetch(
     `${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/rooms/make`,
     {
@@ -8,6 +11,7 @@ export default async function MakeRoomAPI(roomName: string) {
       },
       body: JSON.stringify({
         roomName: roomName,
+        encrypted: encryption,
       }),
       credentials: "include",
     },

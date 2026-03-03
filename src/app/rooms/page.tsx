@@ -15,7 +15,7 @@ export default function Rooms() {
 
   const { loading, error, response } = GetRoomsAPI();
 
-  while (loading) {
+  if (loading) {
     return (
       <div>
         <p>Loading...</p>
@@ -23,73 +23,40 @@ export default function Rooms() {
     );
   }
 
-  if (response?.status === 200) {
-    const res = response.data;
+  if (error) return <p>Something failed: {String(error)}</p>;
 
-    if (res.length > 0) {
-      return (
-        <div>
-          {res.map((room: Room) => (
-            <div
+  if (!response) return <p>Unknown error</p>;
+
+  if (response.status === 401) {
+    router.replace("/login");
+  } else if (response.status !== 200)
+    return <p>Request failed. Status: {response.status}</p>;
+
+  const rooms: Room[] = response.data ?? [];
+
+  return (
+    <div className="flex flex-col gap-3">
+      {rooms.length === 0 ? (
+        <p>No rooms :(</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {rooms.map((room) => (
+            <button
               key={room.id}
-              onClick={() => {
-                router.replace(`/chat?id=${room.id}`);
-              }}
+              type="button"
+              onClick={() => router.replace(`/chat?id=${room.id}`)}
             >
-              <h4>{room.name}</h4>
-              <button>Enter room</button>
-              <hr />
-
-              <br />
-            </div>
+              <div className="font-semibold">{room.name}</div>
+            </button>
           ))}
+        </div>
+      )}
 
-          <Link
-            className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
-            href={{
-              pathname: "/rooms/join",
-            }}
-          >
-            <p>Join a room</p>
-          </Link>
-          <Link
-            className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
-            href={{
-              pathname: "/rooms/make",
-            }}
-          >
-            <p>Make a new room</p>
-          </Link>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <p>No rooms :(</p>
-          <Link
-            className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
-            href={{
-              pathname: "/rooms/join",
-            }}
-          >
-            <p>Join a room</p>
-          </Link>
-          <Link
-            className="text-center border-2 border-black px-4 rounded-full mt-2 dark:border-white"
-            href={{
-              pathname: "/rooms/make",
-            }}
-          >
-            <p>Make a new room</p>
-          </Link>
-        </div>
-      );
-    }
-  } else {
-    return (
-      <div>
-        <p>Not 200. Was {response?.status}</p>
+      <div className="flex flex-col gap-2">
+        <Link href="/rooms/join">Join a room</Link>
+        <br />
+        <Link href="/rooms/make">Make a new room</Link>
       </div>
-    );
-  }
+    </div>
+  );
 }

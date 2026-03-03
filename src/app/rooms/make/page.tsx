@@ -14,9 +14,10 @@ export default function AddRoom() {
 
     const data = await MakeRoomAPI(roomName);
 
-    if (data.status === 200) {
+    if (data.status === 201) {
       router.replace("/rooms");
     } else if (data.status === 401) {
+      router.replace("/login");
     } else {
     }
   }

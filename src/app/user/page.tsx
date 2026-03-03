@@ -3,8 +3,12 @@
 import UserAPI from "@/src/api/UserAPI";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import EditProfileAPI from "@/src/api/EditProfileAPI";
+import { useRouter } from "next/navigation";
 
 export default function UserInfo() {
+  const router = useRouter();
+
   function validAvatar(link: string) {
     return link.startsWith("http") || link.startsWith("https");
   }
@@ -36,7 +40,9 @@ export default function UserInfo() {
   }, [response]);
 
   if (loading) return <p>Loading...</p>;
-  if (!response || response.status !== 200)
+
+  if (response?.status == 401) router.replace("/login");
+  else if (response?.status !== 200)
     return <p>Failed to load user. Status: {response?.status}</p>;
 
   const handleChange = (
@@ -47,15 +53,8 @@ export default function UserInfo() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/user/edit`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        credentials: "include",
-      },
-    );
+    const res = await EditProfileAPI(form);
+
     if (res.ok) {
       alert("Profile updated!");
       setEditing(false);

@@ -1,0 +1,36 @@
+.container {
+    max-width: 650px;
+    margin: 50px auto;
+}
+
+.card {
+    background: #344955;
+    padding: 30px;
+    border-radius: 14px;
+    color: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.field {
+    margin-bottom: 15px;
+}
+
+.label {
+    font-weight: 700;
+}
+
+.input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+}
+
+.button {
+    background: #78AC83;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}

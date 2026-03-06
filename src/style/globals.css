@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #50727B;
+}
+
+header {
+    background: #344955;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+}
+
+header nav {
+    display: flex;
+    gap: 30px;
+}
+
+header a {
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+header a:hover {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+}
+
+button {
+    cursor: pointer;
+}
+
+#div1 { background: #78AC83; }
+#div2 { background: #50727B; }
+#div3 { background: #344955; }
+#div4 { background: #35374B; }

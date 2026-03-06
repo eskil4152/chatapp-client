@@ -1,30 +1,104 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import styles from "../../style/Chat.module.css";
+
+type WsJoined = {
+  type: "JOINED";
+  roomId: string;
+  roomName: string;
+  encrypted: boolean;
+};
+
+type WsError = {
+  type: "ERROR";
+  code: number;
+  message: string;
+};
+
+type WsChat = {
+  type: "MESSAGE" | "JOIN" | "LEAVE";
+  username: string;
+  content: string;
+};
+
+type WsInbound = WsJoined | WsError | WsChat;
 
 export default function ChatClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const roomId = searchParams.get("id");
+  const roomIdParam = searchParams.get("id");
+
+  const roomId = useMemo(
+    () => (roomIdParam ? roomIdParam.trim() : ""),
+    [roomIdParam],
+  );
+
+  const base = process.env.NEXT_PUBLIC_WS_API_URL ?? "";
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
+  const [roomName, setRoomName] = useState<string>("");
+  const [encrypted, setEncrypted] = useState<boolean>(false);
+  const [connected, setConnected] = useState(false);
+  const [status, setStatus] = useState<
+    "CONNECTING" | "JOINING" | "READY" | "ERROR"
+  >("CONNECTING");
+  const [error, setError] = useState<string>("");
+
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   const wsRef = useRef<WebSocket | null>(null);
+  const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_URL}/ws`);
-    let pingTimer: ReturnType<typeof setInterval> | null = null;
+    if (!roomId) return;
+
+    const t = setTimeout(() => {
+      setStatus("CONNECTING");
+      setError("");
+      setRoomName("");
+      setEncrypted(false);
+      setMessages([]);
+      setConnected(false);
+      setMessage("");
+    }, 0);
+
+    return () => clearTimeout(t);
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) {
+      router.replace("/rooms");
+      return;
+    }
+
+    if (!base) {
+      return;
+    }
+
+    const ws = new WebSocket(`${base}/ws`);
+    wsRef.current = ws;
+
+    const cleanup = () => {
+      if (pingTimerRef.current) {
+        clearInterval(pingTimerRef.current);
+        pingTimerRef.current = null;
+      }
+      wsRef.current = null;
+    };
 
     ws.onopen = () => {
-      ws.send(
-        JSON.stringify({
-          type: "JOIN",
-          roomId: roomId,
-        }),
-      );
+      setConnected(true);
+      setStatus("JOINING");
 
-      pingTimer = setInterval(() => {
+      ws.send(JSON.stringify({ type: "JOIN", roomId }));
+
+      pingTimerRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: "PING" }));
         }
@@ -32,76 +106,143 @@ export default function ChatClient() {
     };
 
     ws.onmessage = (event) => {
-      const { username, content } = JSON.parse(event.data);
+      let data: WsInbound | null = null;
 
-      console.log(JSON.parse(event.data));
+      try {
+        data = JSON.parse(event.data) as WsInbound;
+      } catch {
+        return;
+      }
 
-      const new_message = `${username}: ${content}`;
-      setMessages((messages) => [...messages, new_message]);
-    };
+      if (!data || typeof data !== "object" || !("type" in data)) return;
 
-    wsRef.current = ws;
+      if (data.type === "ERROR") {
+        setStatus("ERROR");
+        setError(`${data.code}: ${data.message}`);
 
-    return () => {
-      if (pingTimer) clearInterval(pingTimer);
+        if (data.code === 401) router.replace("/login");
+        if (data.code === 403) router.replace("/rooms");
+        return;
+      }
 
-      if (wsRef.current && wsRef.current.readyState == WebSocket.OPEN) {
-        ws.send(
-          JSON.stringify({
-            type: "LEAVE",
-            roomId: roomId,
-          }),
-        );
-        ws.close();
+      if (data.type === "JOINED") {
+        setRoomName(data.roomName);
+        setEncrypted(Boolean(data.encrypted));
+        setStatus("READY");
+        return;
+      }
+
+      if ("username" in data && "content" in data) {
+        const line = `${data.username}: ${data.content}`;
+        setMessages((prev) => [...prev, line]);
       }
     };
-  }, [roomId]);
+
+    ws.onerror = () => {
+      setConnected(false);
+      setStatus("ERROR");
+      setError("WebSocket error");
+    };
+
+    ws.onclose = () => {
+      setConnected(false);
+      cleanup();
+
+      if (statusRef.current !== "ERROR") {
+        setStatus("ERROR");
+        setError("Disconnected");
+      }
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "LEAVE", roomId }));
+        } catch {}
+      }
+
+      try {
+        ws.close();
+      } catch {}
+
+      cleanup();
+    };
+  }, [roomId, router, base]);
+
+  const canSend = status === "READY" && connected;
+
+  if (!base) {
+    return (
+      <div className="text-center">
+        <p className="text-red-600">Missing NEXT_PUBLIC_WS_API_URL</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="text-center">
-      <h2>Room {roomId}</h2>
-      <hr />
-      <div>
-        {messages.map((m, i) => (
-          <div key={i}>{m}</div>
-        ))}
-      </div>
-      <hr />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!message || !wsRef.current) return;
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>
+          {roomName ? roomName : "Room"} {" // "}
+          {roomName && <span>{encrypted ? "Encrypted" : "Not encrypted"}</span>}
+        </h2>
 
-          wsRef.current.send(
-            JSON.stringify({
-              type: "MESSAGE",
-              roomId: roomId,
-              message: message,
-            }),
-          );
+        <hr />
 
-          setMessage("");
-        }}
-      >
-        <input
-          type="text"
-          id="message"
-          width={10}
-          height={5}
-          placeholder="Enter message"
-          className="border-2 border-black my-2 p-[3px] dark:text-black"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
+        {status !== "READY" && (
+          <div>
+            {status === "ERROR" ? (
+              <p>{error || "Something failed"}</p>
+            ) : (
+              <p>{status === "CONNECTING" ? "Connecting..." : "Joining..."}</p>
+            )}
+          </div>
+        )}
 
-        <br />
+        <div className={styles.messages}>
+          {messages.map((m, i) => (
+            <div key={i} className={styles.message}>
+              {m}
+            </div>
+          ))}
+        </div>
 
-        <div className="flex justify-center gap-10">
-          <button className="border-2 border-black px-4 rounded-full mt-2 dark:border-white">
+        <hr />
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!canSend) return;
+
+            const trimmed = message.trim();
+            if (!trimmed) return;
+
+            wsRef.current?.send(
+              JSON.stringify({
+                type: "MESSAGE",
+                roomId,
+                message: trimmed,
+              }),
+            );
+
+            setMessage("");
+          }}
+        >
+          <input
+            type="text"
+            id="message"
+            placeholder={canSend ? "Enter message" : "Not connected"}
+            disabled={!canSend}
+            className={styles.input}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+
+          <button type="submit" disabled={!canSend} className={styles.button}>
             Send
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

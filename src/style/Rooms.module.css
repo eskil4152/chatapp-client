@@ -1,7 +1,7 @@
 .container {
     max-width: 700px;
     margin: 40px auto;
-    padding: 30px;
+    padding: 0 20px;
 }
 
 .roomList {
@@ -15,8 +15,11 @@
     border-radius: 14px;
     padding: 20px 24px;
     color: white;
-    text-align: left;
     cursor: pointer;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
     box-shadow: 0 6px 18px rgba(0,0,0,0.2);
 
@@ -32,6 +35,28 @@
     box-shadow: 0 10px 26px rgba(0,0,0,0.35);
 }
 
+.roomCardLeft {
+    flex: 1;
+}
+
+.roomCardRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.roomName {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.roomMeta {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
 .roomName {
     font-size: 1.2rem;
     font-weight: 700;
@@ -45,35 +70,107 @@
     color: white;
 }
 
-.divider {
-    margin: 35px 0;
-    border: none;
-    height: 2px;
-    background: #344955;
-}
-
 .actions {
     display: flex;
     justify-content: center;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
-.actionBtn {
-    background: #78AC83;
+.sectionTitle {
+    margin: 10px 0 14px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: white;
-    padding: 10px 22px;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 600;
+}
+
+.roomRow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.roomCard {
+    flex: 1;
+}
+
+.optionsButton {
+    width: 52px;
+    min-width: 52px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #35374B;
+    color: white;
+
+    font-size: 1.5rem;
+    line-height: 1;
+
+    cursor: pointer;
 
     transition:
-            transform 0.15s ease,
-            background 0.2s ease,
-            box-shadow 0.2s ease;
+            background .15s ease,
+            transform .1s ease;
 }
 
-.actionBtn:hover {
-    background: #88be93;
+.optionsButton:hover {
+    background: #44465c;
     transform: translateY(-2px);
-    box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+}
+
+.sectionTitle {
+    margin: 10px 0 14px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.roomRow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.roomCard {
+    flex: 1;
+}
+
+.optionsButton {
+    width: 52px;
+    min-width: 52px;
+    border: none;
+    border-radius: 12px;
+    background: #35374B;
+    color: white;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+            background 0.15s ease,
+            transform 0.1s ease;
+}
+
+.optionsButton:hover {
+    background: #44465c;
+    transform: translateY(-2px);
+}
+
+.leaveButton {
+    min-width: 88px;
+    border: none;
+    border-radius: 12px;
+    background: #35374B;
+    color: white;
+    font-weight: 600;
+    padding: 0 16px;
+    cursor: pointer;
+    transition:
+            background 0.15s ease,
+            transform 0.1s ease;
+}
+
+.leaveButton:hover {
+    background: #44465c;
+    transform: translateY(-2px);
 }

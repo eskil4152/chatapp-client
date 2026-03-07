@@ -1,8 +1,5 @@
-* Add `change password` functionality.
-* Add `log out` functionality.
-* Password strength indicator.
-* Red and unclickable button when password or username are too short.
-* Disconnected indication when inside room but ws closed.
+* Password strength indicator
+* Disconnected indication when inside room but ws closed
 * Delete account (server also needs this)
 
 
@@ -16,13 +13,3 @@
 * Kick users from room
 * See users in room
 * Block users from room
-
-
-* Message timestamps
-* Message borders
-
-* Color template:
-  * 78AC83
-  * 50727B // Main Background
-  * 344955 // Header
-  * 35374B

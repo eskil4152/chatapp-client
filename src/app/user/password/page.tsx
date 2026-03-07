@@ -2,12 +2,11 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import RegisterAPI from "@/src/api/RegisterAPI";
+import ChangePasswordAPI from "@/src/api/ChangePasswordAPI";
 
-export default function Page() {
+export default function ChangePasswordPage() {
   const router = useRouter();
-
-  const [username, setUsername] = useState("");
+  const [old, setOld] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -15,35 +14,30 @@ export default function Page() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await RegisterAPI(username, password);
+    const data = await ChangePasswordAPI(old, password);
 
-    if (data.status === 201) {
-      router.replace("/");
-    } else if (data.status === 409) {
-      setError("Username is taken");
+    if (data.ok) {
+      router.push("/user");
+    } else if (data.status === 401) {
+      router.replace("/login");
     } else {
-      setError("An error occurred");
+      const err = await data.json();
+      setError(err.message);
     }
   }
 
   return (
     <div className="pageShellNarrow">
       <div className="card">
-        <h1 className="pageTitle">Register</h1>
+        <h1 className="pageTitle">Change Password</h1>
 
         <form onSubmit={handleSubmit} className="formStack">
           <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className={`input ${
-              username.length > 0 && username.length < 3 ? "inputError" : ""
-            }`}
+            type="password"
+            placeholder="Old password"
+            value={old}
+            onChange={(e) => setOld(e.target.value)}
           />
-          {username.length > 0 && username.length < 3 && (
-            <div className="inputHint">Minimum 3 characters</div>
-          )}
 
           <div className="inputGroup">
             <input
@@ -64,19 +58,19 @@ export default function Page() {
           <button
             type="submit"
             disabled={password.length < 8}
-            className={`primaryButton ${password.length < 8 || username.length < 3 ? "buttonDisabled" : ""}`}
+            className={`primaryButton ${password.length < 8 ? "buttonDisabled" : ""}`}
           >
             Submit
           </button>
-
-          <button
-            type="button"
-            className="textButton"
-            onClick={() => setPasswordVisible(!passwordVisible)}
-          >
-            {passwordVisible ? "Hide Password" : "Show Password"}
-          </button>
         </form>
+
+        <button
+          type="button"
+          className="textButton"
+          onClick={() => setPasswordVisible(!passwordVisible)}
+        >
+          {passwordVisible ? "Hide Password" : "Show Password"}
+        </button>
 
         {error && <p className="errorBox">{error}</p>}
       </div>

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import JoinRoomAPI from "@/src/api/JoinRoomAPI";
-import styles from "../../../style/JoinRoom.module.css";
 
 export default function JoinRoom() {
   const router = useRouter();
@@ -14,10 +13,6 @@ export default function JoinRoom() {
     e.preventDefault();
 
     const data = await JoinRoomAPI(roomId);
-
-    console.log(data);
-    console.log(data.status);
-    console.log(data.statusText);
 
     if (data.status === 200) {
       router.replace("/");
@@ -31,23 +26,22 @@ export default function JoinRoom() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Join Room</h1>
+    <div className="pageShellNarrow">
+      <div className="card">
+        <h1 className="pageTitle">Join Room</h1>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="formStack">
           <input
             type="text"
             placeholder="Room ID"
-            className={styles.input}
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
           />
 
-          <button className={styles.button}>Join</button>
+          <button className="primaryButton">Join</button>
         </form>
 
-        {error && <p id="errorBox">{error}</p>}
+        {error && <p className="errorBox">{error}</p>}
       </div>
     </div>
   );

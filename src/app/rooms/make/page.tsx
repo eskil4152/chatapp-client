@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import MakeRoomAPI from "@/src/api/MakeRoomAPI";
-import styles from "../../../style/MakeRoom.module.css";
 
 export default function AddRoom() {
   const router = useRouter();
@@ -27,15 +26,14 @@ export default function AddRoom() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Create Room</h1>
+    <div className="pageShellNarrow">
+      <div className="card">
+        <h1 className="pageTitle">Create Room</h1>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="formStack">
           <input
             type="text"
             placeholder="Room Name"
-            className={styles.input}
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
           />
@@ -43,16 +41,15 @@ export default function AddRoom() {
           <button
             type="button"
             onClick={() => setEncryption(!encryption)}
-            className={`${styles.toggle} ${
-              encryption ? styles.toggleActive : ""
-            }`}
+            className={`secondaryButton ${encryption ? "activeToggle" : ""}`}
           >
             Encryption: {encryption ? "Enabled" : "Disabled"}
           </button>
 
-          <button className={styles.button}>Create</button>
+          <button className="primaryButton">Create</button>
         </form>
-        {error && <p id="errorBox">{error}</p>}
+
+        {error && <p className="errorBox">{error}</p>}
       </div>
     </div>
   );

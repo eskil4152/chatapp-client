@@ -6,15 +6,16 @@ import Image from "next/image";
 import EditProfileAPI from "@/src/api/EditProfileAPI";
 import { useRouter } from "next/navigation";
 import styles from "../../style/User.module.css";
+import Link from "next/link";
 
 export default function UserInfo() {
   const router = useRouter();
 
   function validAvatar(link: string) {
-    return link.startsWith("http") || link.startsWith("https");
+    return link.startsWith("http://") || link.startsWith("https://");
   }
 
-  const { loading, error, response } = UserAPI();
+  const { loading, response } = UserAPI();
   const [username, setUsername] = useState("");
 
   const [form, setForm] = useState({
@@ -41,11 +42,35 @@ export default function UserInfo() {
     }
   }, [response]);
 
-  if (loading) return <p>Loading...</p>;
+  useEffect(() => {
+    if (response?.status === 401) {
+      router.replace("/login");
+    }
+  }, [response, router]);
 
-  if (response?.status == 401) router.replace("/login");
-  else if (response?.status !== 200)
-    return <p>Failed to load user. Status: {response?.status}</p>;
+  if (loading) {
+    return (
+      <div className="pageShellNarrow">
+        <div className="card centerText">
+          <p className="loadingText">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (response?.status === 401) return null;
+
+  if (response?.status !== 200) {
+    return (
+      <div className="pageShellNarrow">
+        <div className="card centerText">
+          <p className="errorBox">
+            Failed to load user. Status: {response?.status}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -59,6 +84,7 @@ export default function UserInfo() {
 
     if (res.ok) {
       setEditing(false);
+      setErrorBox("");
       router.refresh();
     } else {
       setErrorBox("Error editing user");
@@ -68,16 +94,22 @@ export default function UserInfo() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <button onClick={() => setEditing(!editing)} className={styles.button}>
-          {editing ? "Cancel" : "Edit profile"}
-        </button>
+        <div className={styles.topActions}>
+          <button
+            onClick={() => setEditing(!editing)}
+            className="secondaryButton"
+            type="button"
+          >
+            {editing ? "Cancel" : "Edit profile"}
+          </button>
+        </div>
 
         <div className={styles.field}>
           <label className={styles.label}>Username</label>
           <div className={styles.valueBox}>{username}</div>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit}>
           <div className={styles.field}>
             <label className={styles.label}>Bio</label>
             {editing ? (
@@ -147,13 +179,40 @@ export default function UserInfo() {
           </div>
 
           {editing && (
-            <button type="submit" className={styles.button}>
+            <button type="submit" className="primaryButton">
               Save
             </button>
           )}
         </form>
 
-        {errorBox && <p id="errorBox">{errorBox}</p>}
+        <div className={styles.bottomActions}>
+          <Link
+            href="/user/password"
+            className={`secondaryButton ${styles.passwordLink}`}
+          >
+            Change Password
+          </Link>
+
+          <button
+            type="button"
+            className="dangerButton"
+            onClick={async () => {
+              await fetch(
+                `${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/logout`,
+                {
+                  method: "POST",
+                  credentials: "include",
+                },
+              );
+
+              router.push("/login");
+            }}
+          >
+            Log out
+          </button>
+        </div>
+
+        {errorBox && <p className="errorBox">{errorBox}</p>}
       </div>
     </div>
   );

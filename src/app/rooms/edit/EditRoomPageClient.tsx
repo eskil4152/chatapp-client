@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import EditRoomAPI from "@/src/api/EditRoomAPI";
 import DeleteRoomAPI from "@/src/api/DeleteRoomAPI";
 
-export default function EditRoomPageClient({
-  roomId,
-}: {
-  roomId: string | null;
-}) {
+export default function EditRoomPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const roomId = searchParams.get("id");
 
   const [roomName, setRoomName] = useState("");
   const [error, setError] = useState("");

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../style/Chat.module.css";
+import formatTimestamp from "@/src/tools/FormatTimestamp";
 
 type WsJoined = {
   type: "JOINED";
@@ -21,6 +22,7 @@ type WsChat = {
   type: "MESSAGE" | "JOIN" | "LEAVE";
   username: string;
   content: string;
+  timestamp: string;
 };
 
 type WsInbound = WsJoined | WsError | WsChat;
@@ -246,7 +248,12 @@ export default function ChatClient() {
         <div className={styles.messages} ref={messagesRef}>
           {messages.map((m, i) => (
             <div key={i} className={styles.message}>
-              <div className={styles.sender}>{m.username}</div>
+              <div className={styles.messageTopRow}>
+                <div className={styles.sender}>{m.username}</div>
+                <div className={styles.timestamp}>
+                  {formatTimestamp(m.timestamp)}
+                </div>
+              </div>
               <div className={styles.content}>{m.content}</div>
             </div>
           ))}

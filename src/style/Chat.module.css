@@ -83,3 +83,17 @@
 .button {
     margin-top: 12px;
 }
+
+.messageTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 3px;
+}
+
+.timestamp {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap;
+}

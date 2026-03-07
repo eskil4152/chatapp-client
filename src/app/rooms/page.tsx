@@ -1,20 +1,24 @@
 "use client";
 
 import GetRoomsAPI from "@/src/api/GetRoomsAPI";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../../style/Rooms.module.css";
+import LeaveRoomAPI from "@/src/api/LeaveRoomAPI";
 
 export default function Rooms() {
   const router = useRouter();
 
   type Room = {
-    id: string;
-    name: string;
+    roomId: string;
+    roomName: string;
+    encrypted: boolean;
+    role: string;
   };
 
   const { loading, error, response } = GetRoomsAPI();
+  const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     if (response?.status === 401) {
@@ -22,28 +26,101 @@ export default function Rooms() {
     }
   }, [response, router]);
 
-  if (loading) return <p className={styles.empty}>Loading...</p>;
-  if (error) return <p className={styles.empty}>Something failed</p>;
-  if (!response) return <p className={styles.empty}>Unknown error</p>;
+  useEffect(() => {
+    if (response?.status === 200) {
+      setRooms(response.data ?? []);
+    }
+  }, [response]);
 
-  const rooms: Room[] = response.data ?? [];
+  const ownedRooms = rooms.filter((r) => r.role === "OWNER");
+  const joinedRooms = rooms.filter((r) => r.role === "MEMBER");
 
   return (
     <div className={styles.container}>
-      {rooms.length === 0 ? (
-        <p className={styles.empty}>No rooms :(</p>
-      ) : (
-        <div className={styles.roomList}>
-          {rooms.map((room) => (
-            <button
-              key={room.id}
-              className={styles.roomCard}
-              onClick={() => router.replace(`/chat?id=${room.id}`)}
-            >
-              <div className={styles.roomName}>{room.name}</div>
-            </button>
-          ))}
-        </div>
+      {rooms.length === 0 && <p className={styles.empty}>No rooms :(</p>}
+
+      {ownedRooms.length > 0 && (
+        <>
+          <h2 className={styles.sectionTitle}>Owned Rooms</h2>
+
+          <div className={styles.roomList}>
+            {ownedRooms.map((room) => (
+              <div key={room.roomId} className={styles.roomRow}>
+                <button
+                  className={styles.roomCard}
+                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
+                >
+                  <div className={styles.roomCardLeft}>
+                    <div className={styles.roomName}>{room.roomName}</div>
+                  </div>
+
+                  <div className={styles.roomCardRight}>
+                    <span className={styles.roomMeta}>
+                      {room.encrypted ? "Encrypted" : "Not encrypted"}
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.optionsButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/rooms/edit?id=${room.roomId}`);
+                  }}
+                >
+                  ⋯
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {joinedRooms.length > 0 && (
+        <>
+          <h2 className={styles.sectionTitle}>Joined Rooms</h2>
+
+          <div className={styles.roomList}>
+            {joinedRooms.map((room) => (
+              <div key={room.roomId} className={styles.roomRow}>
+                <button
+                  className={styles.roomCard}
+                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
+                >
+                  <div className={styles.roomCardLeft}>
+                    <div className={styles.roomName}>{room.roomName}</div>
+                  </div>
+
+                  <div className={styles.roomCardRight}>
+                    <span className={styles.roomMeta}>
+                      {room.encrypted ? "Encrypted" : "Not encrypted"}
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.leaveButton}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const res = await LeaveRoomAPI(room.roomId);
+
+                    if (res.ok) {
+                      setRooms((prev) =>
+                        prev.filter((r) => r.roomId !== room.roomId),
+                      );
+                    } else if (res.status === 401) {
+                      router.replace("/login");
+                    }
+                  }}
+                >
+                  Leave
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <hr className="divider" />

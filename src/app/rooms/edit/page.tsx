@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import EditRoomAPI from "@/src/api/EditRoomAPI";
+import DeleteRoomAPI from "@/src/api/DeleteRoomAPI";
 
 export default function EditRoomPage() {
   const router = useRouter();
@@ -54,6 +55,23 @@ export default function EditRoomPage() {
             Save
           </button>
         </form>
+
+        <button
+          type="button"
+          className="dangerButton"
+          onClick={async (e) => {
+            e.stopPropagation();
+            const res = await DeleteRoomAPI(roomId);
+
+            if (res.ok) {
+              router.push("/rooms");
+            } else if (res.status === 401) {
+              router.replace("/login");
+            }
+          }}
+        >
+          Delete Room
+        </button>
 
         {error && <p className="errorBox">{error}</p>}
       </div>

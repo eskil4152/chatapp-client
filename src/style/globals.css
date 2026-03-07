@@ -4,29 +4,55 @@ body {
     background: #50727B;
 }
 
-header {
+.header {
     background: #344955;
-    display: flex;
-    justify-content: center;
+
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+
     align-items: center;
-    padding: 8px 0;
+
+    padding: 12px 30px;
 }
 
-header nav {
+.headerLeft {
+    justify-self: start;
+}
+
+.headerCenter {
+    justify-self: center;
     display: flex;
-    gap: 30px;
+    gap: 25px;
 }
 
-header a {
-    padding: 10px 20px;
+.headerRight {
+    justify-self: end;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: 700;
     color: white;
     text-decoration: none;
-    transition: background 0.2s ease;
 }
 
-header a:hover {
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
+.header a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+
+    padding: 6px 10px;
+    border-radius: 6px;
+
+    transition: background .15s ease;
+}
+
+.header a:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.main {
+    padding: 30px 20px;
 }
 
 button {

@@ -10,14 +10,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header>
-          <Link href="/user">
-            <p>My info</p>
-          </Link>
+        <header className="header">
+          <div className="headerLeft">
+            <Link href="/" className="logo">
+              ChatApp
+            </Link>
+          </div>
 
-          <Link href="/rooms">
-            <p>My rooms</p>
-          </Link>
+          <nav className="headerCenter">
+            <Link href="/rooms">My rooms</Link>
+          </nav>
+
+          <div className="headerRight">
+            <Link href="/user">My info</Link>
+          </div>
         </header>
 
         {children}

@@ -3,45 +3,52 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import JoinRoomAPI from "@/src/api/JoinRoomAPI";
+import styles from "../../../style/JoinRoom.module.css";
 
-export default function AddRoom() {
+export default function JoinRoom() {
   const router = useRouter();
   const [roomId, setRoomId] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const data = await JoinRoomAPI(roomId);
 
+    console.log(data);
+    console.log(data.status);
+    console.log(data.statusText);
+
     if (data.status === 200) {
       router.replace("/");
     } else if (data.status === 401) {
-    } else {
+      router.replace("/login");
+    } else if (data.status === 400) {
+      setError("Invalid ID");
+    } else if (data.status === 404) {
+      setError("Room Not Found");
     }
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          id="roomId"
-          width={10}
-          height={5}
-          placeholder="Room ID"
-          className="border-2 border-black my-2 p-[3px] dark:text-black"
-          value={roomId}
-          onChange={(e) => setRoomId(e.target.value)}
-        />
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Join Room</h1>
 
-        <br />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input
+            type="text"
+            placeholder="Room ID"
+            className={styles.input}
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+          />
 
-        <div className="flex justify-center gap-10">
-          <button className="border-2 border-black px-4 rounded-full mt-2 dark:border-white">
-            Add
-          </button>
-        </div>
-      </form>
+          <button className={styles.button}>Join</button>
+        </form>
+
+        {error && <p id="errorBox">{error}</p>}
+      </div>
     </div>
   );
 }

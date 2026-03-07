@@ -2,29 +2,37 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useLoading from "@/src/tools/UseLoading";
+import fetchJSON from "@/src/tools/FetchJSON";
 
 export default function HomeClient() {
   const router = useRouter();
+  const base = process.env.NEXT_PUBLIC_SERVER_API_URL;
+
+  const { loading, error, response } = useLoading(async () =>
+    fetchJSON(`${base}/api/auth`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }),
+  );
 
   useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_SERVER_API_URL;
+    if (loading) return;
 
-    if (!base) {
-      router.replace("/login");
+    if (error) {
+      router.replace("/server-offline");
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/auth`, {
-      credentials: "include",
-      cache: "no-store",
-    })
-      .then((res) => {
-        router.replace(res.ok ? "/rooms" : "/login");
-      })
-      .catch(() => {
-        router.replace("/login");
-      });
-  }, [router]);
+    router.replace(response?.status === 200 ? "/rooms" : "/login");
+  }, [loading, error, response, router]);
+
+  if (loading) {
+    return <div>Waking server from deep slumber… please wait.</div>;
+  }
 
   return null;
 }

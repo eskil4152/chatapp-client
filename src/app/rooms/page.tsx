@@ -1,9 +1,10 @@
 "use client";
 
 import GetRoomsAPI from "@/src/api/GetRoomsAPI";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import styles from "../../style/Rooms.module.css";
 
 export default function Rooms() {
   const router = useRouter();
@@ -15,47 +16,46 @@ export default function Rooms() {
 
   const { loading, error, response } = GetRoomsAPI();
 
-  if (loading) {
-    return (
-      <div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (response?.status === 401) {
+      router.replace("/login");
+    }
+  }, [response, router]);
 
-  if (error) return <p>Something failed: {String(error)}</p>;
-
-  if (!response) return <p>Unknown error</p>;
-
-  if (response.status === 401) {
-    router.replace("/login");
-  } else if (response.status !== 200)
-    return <p>Request failed. Status: {response.status}</p>;
+  if (loading) return <p className={styles.empty}>Loading...</p>;
+  if (error) return <p className={styles.empty}>Something failed</p>;
+  if (!response) return <p className={styles.empty}>Unknown error</p>;
 
   const rooms: Room[] = response.data ?? [];
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={styles.container}>
       {rooms.length === 0 ? (
-        <p>No rooms :(</p>
+        <p className={styles.empty}>No rooms :(</p>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className={styles.roomList}>
           {rooms.map((room) => (
             <button
               key={room.id}
-              type="button"
+              className={styles.roomCard}
               onClick={() => router.replace(`/chat?id=${room.id}`)}
             >
-              <div className="font-semibold">{room.name}</div>
+              <div className={styles.roomName}>{room.name}</div>
             </button>
           ))}
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <Link href="/rooms/join">Join a room</Link>
-        <br />
-        <Link href="/rooms/make">Make a new room</Link>
+      <hr className={styles.divider} />
+
+      <div className={styles.actions}>
+        <Link href="/rooms/join" className={styles.actionBtn}>
+          Join Room
+        </Link>
+
+        <Link href="/rooms/make" className={styles.actionBtn}>
+          Create Room
+        </Link>
       </div>
     </div>
   );

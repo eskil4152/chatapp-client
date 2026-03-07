@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import EditProfileAPI from "@/src/api/EditProfileAPI";
 import { useRouter } from "next/navigation";
+import styles from "../../style/User.module.css";
 
 export default function UserInfo() {
   const router = useRouter();
@@ -23,7 +24,8 @@ export default function UserInfo() {
     avatarUrl: "",
   });
 
-  const [editing, setEditing] = useState(false); // toggle edit mode
+  const [editing, setEditing] = useState(false);
+  const [errorBox, setErrorBox] = useState("");
 
   useEffect(() => {
     if (response?.status === 200) {
@@ -56,102 +58,103 @@ export default function UserInfo() {
     const res = await EditProfileAPI(form);
 
     if (res.ok) {
-      alert("Profile updated!");
       setEditing(false);
+      router.refresh();
     } else {
-      alert("Failed to update profile");
+      setErrorBox("Error editing user");
     }
   };
 
   return (
-    <div className="text-center user-info">
-      <button
-        onClick={() => setEditing(!editing)}
-        className="border-2 border-black px-4 rounded mt-2"
-      >
-        {editing ? "Cancel" : "Edit profile"}
-      </button>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <button onClick={() => setEditing(!editing)} className={styles.button}>
+          {editing ? "Cancel" : "Edit profile"}
+        </button>
 
-      <div>
-        <label>Username:</label>
-        <p className="font-bold">{username}</p>
-      </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Username</label>
+          <div className={styles.valueBox}>{username}</div>
+        </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-2 max-w-md mx-auto mt-2"
-      >
-        <label>
-          Bio:
-          {editing ? (
-            <textarea name="bio" value={form.bio} onChange={handleChange} />
-          ) : (
-            <p>{form.bio || "—"}</p>
-          )}
-        </label>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Bio</label>
+            {editing ? (
+              <textarea
+                name="bio"
+                value={form.bio}
+                onChange={handleChange}
+                className={styles.bioBox}
+              />
+            ) : (
+              <div className={styles.valueBox}>{form.bio || "—"}</div>
+            )}
+          </div>
 
-        <label>
-          Email:
-          {editing ? (
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-            />
-          ) : (
-            <p>{form.email || "—"}</p>
-          )}
-        </label>
+          <div className={styles.field}>
+            <label className={styles.label}>Email</label>
+            {editing ? (
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            ) : (
+              <div className={styles.valueBox}>{form.email || "—"}</div>
+            )}
+          </div>
 
-        <label>
-          Full Name:
-          {editing ? (
-            <input
-              type="text"
-              name="fullName"
-              value={form.fullName}
-              onChange={handleChange}
-            />
-          ) : (
-            <p>{form.fullName || "—"}</p>
-          )}
-        </label>
+          <div className={styles.field}>
+            <label className={styles.label}>Full Name</label>
+            {editing ? (
+              <input
+                type="text"
+                name="fullName"
+                value={form.fullName}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            ) : (
+              <div className={styles.valueBox}>{form.fullName || "—"}</div>
+            )}
+          </div>
 
-        <label>
-          Avatar URL:
-          {editing ? (
-            <input
-              type="text"
-              name="avatarUrl"
-              value={form.avatarUrl}
-              onChange={handleChange}
-            />
-          ) : (
-            <>
-              {validAvatar(form.avatarUrl) ? (
+          <div className={styles.field}>
+            <label className={styles.label}>Avatar URL</label>
+            {editing ? (
+              <input
+                type="text"
+                name="avatarUrl"
+                value={form.avatarUrl}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            ) : validAvatar(form.avatarUrl) ? (
+              <div className={styles.imageBox}>
                 <Image
                   src={form.avatarUrl}
-                  alt="Image not found"
+                  alt="Avatar"
                   width={400}
                   height={400}
                 />
-              ) : (
-                <p>No image</p>
-              )}
-            </>
-          )}
-        </label>
+              </div>
+            ) : (
+              <div className={styles.valueBox}>No image</div>
+            )}
+          </div>
 
-        {editing && (
-          <button
-            type="submit"
-            className="border-2 border-black px-4 rounded mt-2"
-          >
-            Save
-          </button>
-        )}
-      </form>
+          {editing && (
+            <button type="submit" className={styles.button}>
+              Save
+            </button>
+          )}
+        </form>
+
+        {errorBox && <p id="errorBox">{errorBox}</p>}
+      </div>
     </div>
   );
 }

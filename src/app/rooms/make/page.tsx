@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import MakeRoomAPI from "@/src/api/MakeRoomAPI";
+import styles from "../../../style/MakeRoom.module.css";
 
 export default function AddRoom() {
   const router = useRouter();
 
   const [roomName, setRoomName] = useState("");
   const [encryption, setEncryption] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,42 +21,39 @@ export default function AddRoom() {
       router.replace("/rooms");
     } else if (data.status === 401) {
       router.replace("/login");
-    } else {
+    } else if (data.status === 400) {
+      setError("Invalid room name");
     }
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          id="roomName"
-          width={10}
-          height={5}
-          placeholder="Room Name"
-          className="border-2 border-black my-2 p-[3px] dark:text-black"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
-        />
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Create Room</h1>
 
-        <br />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input
+            type="text"
+            placeholder="Room Name"
+            className={styles.input}
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+          />
 
-        <input
-          type="button"
-          id="encrypted"
-          value={"Encryption"}
-          onClick={(e) => setEncryption(!encryption)}
-        />
-        <p>Encryption currently set to {encryption ? "True" : "False"}</p>
-
-        <br />
-
-        <div className="flex justify-center gap-10">
-          <button className="border-2 border-black px-4 rounded-full mt-2 dark:border-white">
-            Create
+          <button
+            type="button"
+            onClick={() => setEncryption(!encryption)}
+            className={`${styles.toggle} ${
+              encryption ? styles.toggleActive : ""
+            }`}
+          >
+            Encryption: {encryption ? "Enabled" : "Disabled"}
           </button>
-        </div>
-      </form>
+
+          <button className={styles.button}>Create</button>
+        </form>
+        {error && <p id="errorBox">{error}</p>}
+      </div>
     </div>
   );
 }

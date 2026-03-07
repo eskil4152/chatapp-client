@@ -17,11 +17,7 @@ export default function ChangePasswordPage() {
     const data = await ChangePasswordAPI(old, password);
 
     if (data.ok) {
-      return (
-        <div>
-          <p>OK</p>
-        </div>
-      );
+      router.push("/user");
     } else if (data.status === 401) {
       router.replace("/login");
     } else if (!data.ok) {

@@ -1,5 +1,3 @@
-* Add `change password` functionality.
-* Add `log out` functionality.
 * Password strength indicator.
 * Red and unclickable button when password or username are too short.
 * Disconnected indication when inside room but ws closed.

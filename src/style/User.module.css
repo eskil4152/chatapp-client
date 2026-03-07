@@ -26,6 +26,22 @@
     border: none;
 }
 
+.bioBox {
+    width: 100%;
+    min-height: 120px;
+    max-height: 180px;
+
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: none;
+
+    resize: none;
+    overflow-y: auto;
+
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
 .button {
     background: #78AC83;
     padding: 10px 20px;

@@ -85,7 +85,7 @@ export default function UserInfo() {
                 name="bio"
                 value={form.bio}
                 onChange={handleChange}
-                className={styles.textarea}
+                className={styles.bioBox}
               />
             ) : (
               <div className={styles.valueBox}>{form.bio || "—"}</div>

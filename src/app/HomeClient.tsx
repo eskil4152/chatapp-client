@@ -31,7 +31,15 @@ export default function HomeClient() {
   }, [loading, error, response, router]);
 
   if (loading) {
-    return <div>Waking server from deep slumber… please wait.</div>;
+    return (
+      <div className="pageShellNarrow">
+        <div className="card centerText">
+          <p className="loadingText">
+            Waking server from deep slumber… please wait.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return null;

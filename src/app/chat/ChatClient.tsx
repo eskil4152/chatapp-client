@@ -46,8 +46,16 @@ export default function ChatClient() {
     "CONNECTING" | "JOINING" | "READY" | "ERROR"
   >("CONNECTING");
   const [error, setError] = useState<string>("");
+
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const statusRef = useRef(status);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   useEffect(() => {
     const el = messagesRef.current;
@@ -63,34 +71,6 @@ export default function ChatClient() {
     el.style.height = "0px";
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   }, [message]);
-
-  const statusRef = useRef(status);
-  useEffect(() => {
-    statusRef.current = status;
-  }, [status]);
-
-  const wsRef = useRef<WebSocket | null>(null);
-  const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!canSend) return;
-
-      const trimmed = message.trim();
-      if (!trimmed) return;
-
-      wsRef.current?.send(
-        JSON.stringify({
-          type: "MESSAGE",
-          roomId,
-          message: trimmed,
-        }),
-      );
-
-      setMessage("");
-    }
-  }
 
   useEffect(() => {
     if (!roomId) return;
@@ -114,9 +94,7 @@ export default function ChatClient() {
       return;
     }
 
-    if (!base) {
-      return;
-    }
+    if (!base) return;
 
     const ws = new WebSocket(`${base}/ws`);
     wsRef.current = ws;
@@ -195,11 +173,11 @@ export default function ChatClient() {
         try {
           ws.send(JSON.stringify({ type: "LEAVE", roomId }));
         } catch {}
-      }
 
-      try {
-        ws.close();
-      } catch {}
+        try {
+          ws.close();
+        } catch {}
+      }
 
       cleanup();
     };
@@ -207,10 +185,36 @@ export default function ChatClient() {
 
   const canSend = status === "READY" && connected;
 
+  function sendCurrentMessage() {
+    if (!canSend) return;
+
+    const trimmed = message.trim();
+    if (!trimmed) return;
+
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "MESSAGE",
+        roomId,
+        message: trimmed,
+      }),
+    );
+
+    setMessage("");
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendCurrentMessage();
+    }
+  }
+
   if (!base) {
     return (
-      <div className="text-center">
-        <p className="text-red-600">Missing NEXT_PUBLIC_WS_API_URL</p>
+      <div className="pageShellNarrow">
+        <div className="card centerText">
+          <p className="errorBox">Missing NEXT_PUBLIC_WS_API_URL</p>
+        </div>
       </div>
     );
   }
@@ -219,14 +223,18 @@ export default function ChatClient() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h2 className={styles.title}>
-          {roomName ? roomName : "Room"} {" // "}
-          {roomName && <span>{encrypted ? "Encrypted" : "Not encrypted"}</span>}
+          {roomName ? roomName : "Room"} {""}
+          {roomName && (
+            <span className={styles.roomMeta}>
+              {encrypted ? "Encrypted" : "Not encrypted"}
+            </span>
+          )}
         </h2>
 
         <hr />
 
         {status !== "READY" && (
-          <div>
+          <div className="statusBox">
             {status === "ERROR" ? (
               <p>{error || "Something failed"}</p>
             ) : (
@@ -247,22 +255,10 @@ export default function ChatClient() {
         <hr />
 
         <form
+          className={styles.form}
           onSubmit={(e) => {
             e.preventDefault();
-            if (!canSend) return;
-
-            const trimmed = message.trim();
-            if (!trimmed) return;
-
-            wsRef.current?.send(
-              JSON.stringify({
-                type: "MESSAGE",
-                roomId,
-                message: trimmed,
-              }),
-            );
-
-            setMessage("");
+            sendCurrentMessage();
           }}
         >
           <textarea
@@ -277,7 +273,11 @@ export default function ChatClient() {
             rows={1}
           />
 
-          <button type="submit" disabled={!canSend} className={styles.button}>
+          <button
+            type="submit"
+            disabled={!canSend}
+            className={`primaryButton ${styles.button}`}
+          >
             Send
           </button>
         </form>

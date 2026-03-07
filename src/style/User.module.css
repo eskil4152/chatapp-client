@@ -1,6 +1,7 @@
 .container {
     max-width: 650px;
     margin: 50px auto;
+    padding: 0 20px;
 }
 
 .card {
@@ -16,37 +17,60 @@
 }
 
 .label {
+    display: block;
     font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.valueBox {
+    background: #50727B;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: white;
+    min-height: 20px;
 }
 
 .input {
-    width: 100%;
-    padding: 8px;
-    border-radius: 6px;
-    border: none;
+    background: #5F8691;
 }
 
 .bioBox {
     width: 100%;
     min-height: 120px;
     max-height: 180px;
-
     padding: 10px 12px;
     border-radius: 10px;
     border: none;
-
     resize: none;
     overflow-y: auto;
-
     font-family: inherit;
     font-size: 0.95rem;
+    background: #5F8691;
+    color: white;
 }
 
-.button {
-    background: #78AC83;
-    padding: 10px 20px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    margin-top: 10px;
+.imageBox {
+    margin-top: 8px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.topActions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.bottomActions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.passwordLink {
+    display: inline-block;
 }

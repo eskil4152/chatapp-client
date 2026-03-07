@@ -1,7 +1,7 @@
 .container {
     max-width: 700px;
     margin: 40px auto;
-    padding: 30px;
+    padding: 0 20px;
 }
 
 .roomList {
@@ -17,9 +17,8 @@
     color: white;
     text-align: left;
     cursor: pointer;
-
+    border: none;
     box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-
     transition:
             transform 0.15s ease,
             box-shadow 0.2s ease,
@@ -45,35 +44,9 @@
     color: white;
 }
 
-.divider {
-    margin: 35px 0;
-    border: none;
-    height: 2px;
-    background: #344955;
-}
-
 .actions {
     display: flex;
     justify-content: center;
     gap: 20px;
-}
-
-.actionBtn {
-    background: #78AC83;
-    color: white;
-    padding: 10px 22px;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 600;
-
-    transition:
-            transform 0.15s ease,
-            background 0.2s ease,
-            box-shadow 0.2s ease;
-}
-
-.actionBtn:hover {
-    background: #88be93;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+    flex-wrap: wrap;
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../../../style/ChangePassword.module.css";
 import ChangePasswordAPI from "@/src/api/ChangePasswordAPI";
 
 export default function ChangePasswordPage() {
@@ -20,35 +19,37 @@ export default function ChangePasswordPage() {
       router.push("/user");
     } else if (data.status === 401) {
       router.replace("/login");
-    } else if (!data.ok) {
+    } else {
       const err = await data.json();
       setError(err.message);
     }
   }
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Change Password</h1>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          type="password"
-          placeholder="Old password"
-          className={styles.input}
-          value={old}
-          onChange={(e) => setOld(e.target.value)}
-        />
+    <div className="pageShellNarrow">
+      <div className="card">
+        <h1 className="pageTitle">Change Password</h1>
 
-        <input
-          type="password"
-          placeholder="New password"
-          className={styles.input}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <form onSubmit={handleSubmit} className="formStack">
+          <input
+            type="password"
+            placeholder="Old password"
+            value={old}
+            onChange={(e) => setOld(e.target.value)}
+          />
 
-        <button className={styles.button}>Create</button>
-      </form>
-      {error && <p id="errorBox">{error}</p>}
+          <input
+            type="password"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="primaryButton">Change Password</button>
+        </form>
+
+        {error && <p className="errorBox">{error}</p>}
+      </div>
     </div>
   );
 }

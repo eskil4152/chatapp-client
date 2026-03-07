@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import RegisterAPI from "@/src/api/RegisterAPI";
-import styles from "../../style/Auth.module.css";
 
 export default function Page() {
   const router = useRouter();
@@ -28,15 +27,14 @@ export default function Page() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Register</h1>
+    <div className="pageShellNarrow">
+      <div className="card">
+        <h1 className="pageTitle">Register</h1>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="formStack">
           <input
             type="text"
             placeholder="Username / Email"
-            className={styles.input}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -44,23 +42,22 @@ export default function Page() {
           <input
             type={passwordVisible ? "text" : "password"}
             placeholder="Password"
-            className={styles.input}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button className={styles.button}>Register</button>
+          <button className="primaryButton">Register</button>
 
           <button
             type="button"
-            className={styles.showPassword}
+            className="textButton"
             onClick={() => setPasswordVisible(!passwordVisible)}
           >
             {passwordVisible ? "Hide Password" : "Show Password"}
           </button>
         </form>
 
-        {error && <p id="errorBox">{error}</p>}
+        {error && <p className="errorBox">{error}</p>}
       </div>
     </div>
   );

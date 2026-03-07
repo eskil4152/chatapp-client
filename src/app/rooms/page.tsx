@@ -46,14 +46,14 @@ export default function Rooms() {
         </div>
       )}
 
-      <hr className={styles.divider} />
+      <hr className="divider" />
 
       <div className={styles.actions}>
-        <Link href="/rooms/join" className={styles.actionBtn}>
+        <Link href="/rooms/join" className="primaryButton">
           Join Room
         </Link>
 
-        <Link href="/rooms/make" className={styles.actionBtn}>
+        <Link href="/rooms/make" className="primaryButton">
           Create Room
         </Link>
       </div>

@@ -15,7 +15,6 @@
 * See users in room
 * Block users from room
 
-
 * Message timestamps
 * Message borders
 

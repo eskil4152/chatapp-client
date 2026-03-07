@@ -46,6 +46,23 @@ export default function ChatClient() {
     "CONNECTING" | "JOINING" | "READY" | "ERROR"
   >("CONNECTING");
   const [error, setError] = useState<string>("");
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+
+    el.scrollTop = el.scrollHeight;
+  }, [messages]);
+
+  useEffect(() => {
+    const el = textAreaRef.current;
+    if (!el) return;
+
+    el.style.height = "0px";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, [message]);
 
   const statusRef = useRef(status);
   useEffect(() => {
@@ -54,6 +71,26 @@ export default function ChatClient() {
 
   const wsRef = useRef<WebSocket | null>(null);
   const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!canSend) return;
+
+      const trimmed = message.trim();
+      if (!trimmed) return;
+
+      wsRef.current?.send(
+        JSON.stringify({
+          type: "MESSAGE",
+          roomId,
+          message: trimmed,
+        }),
+      );
+
+      setMessage("");
+    }
+  }
 
   useEffect(() => {
     if (!roomId) return;
@@ -198,7 +235,7 @@ export default function ChatClient() {
           </div>
         )}
 
-        <div className={styles.messages}>
+        <div className={styles.messages} ref={messagesRef}>
           {messages.map((m, i) => (
             <div key={i} className={styles.message}>
               <div className={styles.sender}>{m.username}</div>
@@ -228,14 +265,16 @@ export default function ChatClient() {
             setMessage("");
           }}
         >
-          <input
-            type="text"
+          <textarea
+            ref={textAreaRef}
             id="message"
             placeholder={canSend ? "Enter message" : "Not connected"}
             disabled={!canSend}
             className={styles.input}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
           />
 
           <button type="submit" disabled={!canSend} className={styles.button}>

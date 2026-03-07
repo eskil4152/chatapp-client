@@ -21,39 +21,59 @@
 .messages {
     background: #50727B;
     border-radius: 10px;
-    padding: 15px;
     max-height: 350px;
     overflow-y: auto;
     margin: 15px 0;
+    padding: 0 16px;
 }
 
 .message {
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 10px;
-    margin-bottom: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.message:last-child {
+    border-bottom: none;
 }
 
 .sender {
     font-weight: 700;
     font-size: 0.95rem;
-    color: #d8f3dc;
-    margin-bottom: 4px;
+    color: #dcefd7;
+    margin-bottom: 3px;
 }
 
 .content {
     font-size: 1rem;
-    line-height: 1.4;
     color: white;
+    line-height: 1.35;
     word-break: break-word;
+}
+
+.form {
+    width: 100%;
 }
 
 .input {
     width: 100%;
-    padding: 10px;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px 12px;
     border-radius: 8px;
     border: none;
     margin-top: 10px;
+
+    resize: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    min-height: 44px;
+    max-height: 140px;
+
+    font: inherit;
+    line-height: 1.4;
+    display: block;
 }
 
 .button {

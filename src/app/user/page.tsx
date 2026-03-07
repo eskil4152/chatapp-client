@@ -6,6 +6,8 @@ import Image from "next/image";
 import EditProfileAPI from "@/src/api/EditProfileAPI";
 import { useRouter } from "next/navigation";
 import styles from "../../style/User.module.css";
+import Link from "next/link";
+import { white } from "next/dist/lib/picocolors";
 
 export default function UserInfo() {
   const router = useRouter();
@@ -152,6 +154,8 @@ export default function UserInfo() {
             </button>
           )}
         </form>
+
+        <Link href="/user/password">Change Password</Link>
 
         {errorBox && <p id="errorBox">{errorBox}</p>}
       </div>

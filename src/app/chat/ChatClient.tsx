@@ -38,7 +38,7 @@ export default function ChatClient() {
   const base = process.env.NEXT_PUBLIC_WS_API_URL ?? "";
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<WsChat[]>([]);
   const [roomName, setRoomName] = useState<string>("");
   const [encrypted, setEncrypted] = useState<boolean>(false);
   const [connected, setConnected] = useState(false);
@@ -133,8 +133,7 @@ export default function ChatClient() {
       }
 
       if ("username" in data && "content" in data) {
-        const line = `${data.username}: ${data.content}`;
-        setMessages((prev) => [...prev, line]);
+        setMessages((prev) => [...prev, data]);
       }
     };
 
@@ -202,7 +201,8 @@ export default function ChatClient() {
         <div className={styles.messages}>
           {messages.map((m, i) => (
             <div key={i} className={styles.message}>
-              {m}
+              <div className={styles.sender}>{m.username}</div>
+              <div className={styles.content}>{m.content}</div>
             </div>
           ))}
         </div>

@@ -10,6 +10,7 @@ export default function AddRoom() {
 
   const [roomName, setRoomName] = useState("");
   const [encryption, setEncryption] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -20,7 +21,8 @@ export default function AddRoom() {
       router.replace("/rooms");
     } else if (data.status === 401) {
       router.replace("/login");
-    } else {
+    } else if (data.status === 400) {
+      setError("Invalid room name");
     }
   }
 
@@ -50,6 +52,7 @@ export default function AddRoom() {
 
           <button className={styles.button}>Create</button>
         </form>
+        {error && <p id="errorBox">{error}</p>}
       </div>
     </div>
   );

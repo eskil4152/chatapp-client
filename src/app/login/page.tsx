@@ -22,7 +22,7 @@ export default function Page() {
     if (data.status === 200) {
       router.replace("/rooms");
     } else if (data.status === 401) {
-      setError("Wrong Password");
+      setError("Credentials not found.");
     } else {
       setError("An error occurred");
     }
@@ -52,7 +52,6 @@ export default function Page() {
 
           <button className={styles.button}>Log In</button>
 
-          {/* show password belongs to login */}
           <button
             type="button"
             className={styles.showPassword}
@@ -68,7 +67,7 @@ export default function Page() {
           Register
         </Link>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <p id="errorBox">{error}</p>}
       </div>
     </div>
   );

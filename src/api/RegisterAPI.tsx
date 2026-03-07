@@ -1,6 +1,6 @@
 export default async function RegisterAPI(username: string, password: string) {
   return await fetch(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/register`, {
-    method: "post",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },

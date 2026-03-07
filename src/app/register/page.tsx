@@ -60,7 +60,7 @@ export default function Page() {
           </button>
         </form>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <p id="errorBox">{error}</p>}
       </div>
     </div>
   );

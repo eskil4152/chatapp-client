@@ -28,7 +28,24 @@
 }
 
 .message {
-    padding: 6px 0;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.sender {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #d8f3dc;
+    margin-bottom: 4px;
+}
+
+.content {
+    font-size: 1rem;
+    line-height: 1.4;
+    color: white;
+    word-break: break-word;
 }
 
 .input {

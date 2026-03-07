@@ -104,15 +104,6 @@
     transform: translateY(-2px);
 }
 
-.error {
-    margin-top: 18px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: rgba(158, 61, 61, 0.22);
-    color: #ffd2d2;
-    font-weight: 700;
-}
-
 .divider {
     margin: 26px 0 10px 0;
     border: none;

@@ -25,6 +25,7 @@ export default function UserInfo() {
   });
 
   const [editing, setEditing] = useState(false);
+  const [errorBox, setErrorBox] = useState("");
 
   useEffect(() => {
     if (response?.status === 200) {
@@ -57,10 +58,10 @@ export default function UserInfo() {
     const res = await EditProfileAPI(form);
 
     if (res.ok) {
-      alert("Profile updated!");
       setEditing(false);
+      router.refresh();
     } else {
-      alert("Failed to update profile");
+      setErrorBox("Error editing user");
     }
   };
 
@@ -151,6 +152,8 @@ export default function UserInfo() {
             </button>
           )}
         </form>
+
+        {errorBox && <p id="errorBox">{errorBox}</p>}
       </div>
     </div>
   );

@@ -33,6 +33,15 @@ button {
     cursor: pointer;
 }
 
+#errorBox {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(158, 61, 61, 0.22);
+    color: #ffd2d2;
+    font-weight: 700;
+}
+
 #div1 { background: #78AC83; }
 #div2 { background: #50727B; }
 #div3 { background: #344955; }

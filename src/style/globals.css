@@ -263,3 +263,27 @@ hr {
 .activeToggle {
     background: var(--accent) !important;
 }
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input {
+    border: 1px solid #ccc;
+}
+
+.inputError {
+    border-color: #d9534f;
+}
+
+.inputHint {
+    font-size: 0.8rem;
+    color: #d9534f;
+}
+
+.buttonDisabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

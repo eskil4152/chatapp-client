@@ -1,5 +1,4 @@
 * Password strength indicator
-* Red and unclickable button when password or username are too short
 * Disconnected indication when inside room but ws closed
 * Delete account (server also needs this)
 

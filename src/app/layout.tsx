@@ -9,6 +9,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <title>ChatApp</title>
+      </head>
       <body>
         <header className="header">
           <div className="headerLeft">

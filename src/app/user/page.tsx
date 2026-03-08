@@ -7,6 +7,7 @@ import EditProfileAPI from "@/src/api/EditProfileAPI";
 import { useRouter } from "next/navigation";
 import styles from "../../style/User.module.css";
 import Link from "next/link";
+import LogoutAPI from "@/src/api/LogoutAPI";
 
 export default function UserInfo() {
   const router = useRouter();
@@ -197,15 +198,7 @@ export default function UserInfo() {
             type="button"
             className="dangerButton"
             onClick={async () => {
-              await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/logout`,
-                {
-                  method: "POST",
-                  credentials: "include",
-                },
-              );
-
-              router.push("/login");
+              await LogoutAPI().then(() => router.push("/login"));
             }}
           >
             Log out

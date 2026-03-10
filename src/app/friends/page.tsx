@@ -44,7 +44,11 @@ export default function Friends() {
               <div key={friend.username} className={styles.friendRow}>
                 <button
                   className={styles.friendCard}
-                  onClick={() => router.replace(`/friends/${friend.username}`)}
+                  onClick={() =>
+                    router.replace(
+                      `/friends/info?username=${encodeURIComponent(friend.username)}`,
+                    )
+                  }
                 >
                   <div className={styles.friendCardLeft}>
                     {friend.avatarUrl ? (
@@ -53,6 +57,7 @@ export default function Friends() {
                         alt={`${friend.username} avatar`}
                         width={48}
                         height={48}
+                        className="avatarSmall"
                       />
                     ) : (
                       <div className={styles.avatarPlaceholder}>No avatar</div>

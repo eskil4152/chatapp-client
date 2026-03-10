@@ -172,6 +172,7 @@ export default function UserInfo() {
                   alt="Avatar"
                   width={400}
                   height={400}
+                  className="avatar"
                 />
               </div>
             ) : (

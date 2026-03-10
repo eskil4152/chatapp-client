@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "export",
   allowedDevOrigins: ["192.168.0.186", "localhost", "127.0.0.1"],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

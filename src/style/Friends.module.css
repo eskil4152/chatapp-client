@@ -4,21 +4,21 @@
     padding: 0 20px;
 }
 
-.roomList {
+.friendsList {
     display: flex;
     flex-direction: column;
     gap: 18px;
 }
 
-.roomCard {
+.friendCard {
     background: #344955;
     border-radius: 14px;
     padding: 20px 24px;
+    flex: 1;
     color: white;
     cursor: pointer;
 
     display: flex;
-    flex: 1;
     justify-content: space-between;
     align-items: center;
 
@@ -30,25 +30,25 @@
             background 0.2s ease;
 }
 
-.roomCard:hover {
+.friendCard:hover {
     transform: translateY(-3px);
     background: #3f5d67;
     box-shadow: 0 10px 26px rgba(0,0,0,0.35);
 }
 
-.roomCardLeft {
+.friendCardRight {
     flex: 1;
 }
 
-.roomCardRight {
+.friendCardLeft {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
 }
 
-.roomName {
-    font-size: 1.2rem;
+.friendsUsername {
+    font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.5px;
 }
@@ -56,6 +56,12 @@
 .roomMeta {
     font-size: 0.8rem;
     opacity: 0.8;
+}
+
+.roomName {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .empty {
@@ -79,13 +85,13 @@
     color: white;
 }
 
-.roomRow {
+.friendRow {
     display: flex;
     gap: 12px;
     align-items: stretch;
 }
 
-.optionsButton {
+.chatButton {
     min-width: 88px;
     border: none;
     border-radius: 12px;
@@ -99,7 +105,7 @@
             transform 0.1s ease;
 }
 
-.optionsButton:hover {
+.chatButton:hover {
     background: #44465c;
     transform: translateY(-2px);
 }

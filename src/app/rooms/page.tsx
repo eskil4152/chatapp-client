@@ -15,6 +15,7 @@ export default function Rooms() {
     roomName: string;
     encrypted: boolean;
     role: string;
+    type: string;
   };
 
   const { loading, error, response } = GetRoomsAPI();
@@ -32,8 +33,13 @@ export default function Rooms() {
     }
   }, [response]);
 
-  const ownedRooms = rooms.filter((r) => r.role === "OWNER");
-  const joinedRooms = rooms.filter((r) => r.role === "MEMBER");
+  const ownedRooms = rooms.filter(
+    (r) => r.role === "OWNER" && r.type === "GROUP",
+  );
+  const joinedRooms = rooms.filter(
+    (r) => r.role === "MEMBER" && r.type === "GROUP",
+  );
+  const privateRooms = rooms.filter((r) => r.type === "PRIVATE");
 
   return (
     <div className={styles.container}>
@@ -69,7 +75,7 @@ export default function Rooms() {
                     router.push(`/rooms/edit?id=${room.roomId}`);
                   }}
                 >
-                  ⋯
+                  Edit room
                 </button>
               </div>
             ))}
@@ -101,7 +107,7 @@ export default function Rooms() {
 
                 <button
                   type="button"
-                  className={styles.leaveButton}
+                  className={styles.optionsButton}
                   onClick={async (e) => {
                     e.stopPropagation();
                     const res = await LeaveRoomAPI(room.roomId);
@@ -116,6 +122,27 @@ export default function Rooms() {
                   }}
                 >
                   Leave
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {privateRooms.length > 0 && (
+        <>
+          <h2 className={styles.sectionTitle}>Private Rooms</h2>
+
+          <div className={styles.roomList}>
+            {privateRooms.map((room) => (
+              <div key={room.roomId} className={styles.roomRow}>
+                <button
+                  className={styles.roomCard}
+                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
+                >
+                  <div className={styles.roomCardLeft}>
+                    <div className={styles.roomName}>{room.roomName}</div>
+                  </div>
                 </button>
               </div>
             ))}

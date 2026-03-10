@@ -26,6 +26,7 @@ export default function RootLayout({
           </nav>
 
           <div className="headerRight">
+            <Link href="/friends">My friends</Link>
             <Link href="/user">My info</Link>
           </div>
         </header>

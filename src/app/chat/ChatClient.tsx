@@ -101,6 +101,18 @@ export default function ChatClient() {
     const ws = new WebSocket(`${base}/ws`);
     wsRef.current = ws;
 
+    const sendLeave = () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "LEAVE", roomId }));
+        } catch {}
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      sendLeave();
+    };
+
     const cleanup = () => {
       if (pingTimerRef.current) {
         clearInterval(pingTimerRef.current);
@@ -169,6 +181,8 @@ export default function ChatClient() {
         setError("Disconnected");
       }
     };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       if (ws.readyState === WebSocket.OPEN) {

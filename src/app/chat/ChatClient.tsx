@@ -4,28 +4,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../style/Chat.module.css";
 import formatTimestamp from "@/src/tools/FormatTimestamp";
+import { WsChat, WsInbound } from "@/src/types/WsChatTypes";
+import GetChatAPI from "@/src/api/GetChatsAPI";
 
-type WsJoined = {
-  type: "JOINED";
-  roomId: string;
-  roomName: string;
-  encrypted: boolean;
-};
-
-type WsError = {
-  type: "ERROR";
-  code: number;
-  message: string;
-};
-
-type WsChat = {
-  type: "MESSAGE" | "JOIN" | "LEAVE";
-  username: string;
-  content: string;
-  timestamp: string;
-};
-
-type WsInbound = WsJoined | WsError | WsChat;
+const PAGE_SIZE = 25;
 
 export default function ChatClient() {
   const router = useRouter();
@@ -37,8 +19,6 @@ export default function ChatClient() {
     [roomIdParam],
   );
 
-  const base = process.env.NEXT_PUBLIC_WS_API_URL ?? "";
-
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<WsChat[]>([]);
   const [roomName, setRoomName] = useState<string>("");
@@ -48,12 +28,18 @@ export default function ChatClient() {
     "CONNECTING" | "JOINING" | "READY" | "ERROR"
   >("CONNECTING");
   const [error, setError] = useState<string>("");
+  const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusRef = useRef(status);
+  const rateLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     statusRef.current = status;
@@ -85,10 +71,71 @@ export default function ChatClient() {
       setMessages([]);
       setConnected(false);
       setMessage("");
+      setRateLimitedUntil(null);
+      setPage(0);
+      setHasMore(true);
+      setLoadingOlder(false);
     }, 0);
 
     return () => clearTimeout(t);
   }, [roomId]);
+
+  async function loadMessages(targetPage: number, prepend: boolean) {
+    if (!roomId) return;
+
+    setLoadingOlder(true);
+
+    try {
+      const history = await GetChatAPI(roomId, targetPage, PAGE_SIZE);
+
+      const mapped: WsChat[] = history.map((m) => ({
+        type: "MESSAGE",
+        username: m.username,
+        content: m.message ?? "",
+        timestamp: m.timestamp,
+      }));
+
+      setMessages((prev) => {
+        if (!prepend) {
+          return mapped;
+        }
+
+        const merged = [...mapped, ...prev];
+
+        return merged.filter(
+          (msg, index, arr) =>
+            index ===
+            arr.findIndex(
+              (x) =>
+                x.type === msg.type &&
+                x.username === msg.username &&
+                x.content === msg.content &&
+                x.timestamp === msg.timestamp,
+            ),
+        );
+      });
+
+      setPage(targetPage);
+      setHasMore(history.length === PAGE_SIZE);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message === "UNAUTHORIZED") {
+          router.replace("/login");
+          return;
+        }
+
+        if (e.message === "FORBIDDEN" || e.message === "NOT_FOUND") {
+          router.replace("/rooms");
+          return;
+        }
+      }
+
+      setStatus("ERROR");
+      setError("Failed to load chat history");
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
 
   useEffect(() => {
     if (!roomId) {
@@ -96,9 +143,9 @@ export default function ChatClient() {
       return;
     }
 
-    if (!base) return;
+    if (!process.env.NEXT_PUBLIC_WS_API_URL) return;
 
-    const ws = new WebSocket(`${base}/ws`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_URL}/ws`);
     wsRef.current = ws;
 
     const sendLeave = () => {
@@ -118,6 +165,14 @@ export default function ChatClient() {
         clearInterval(pingTimerRef.current);
         pingTimerRef.current = null;
       }
+      if (rateLimitTimerRef.current) {
+        clearTimeout(rateLimitTimerRef.current);
+        rateLimitTimerRef.current = null;
+      }
+      if (errorClearTimerRef.current) {
+        clearTimeout(errorClearTimerRef.current);
+        errorClearTimerRef.current = null;
+      }
       wsRef.current = null;
     };
 
@@ -134,7 +189,7 @@ export default function ChatClient() {
       }, 25000);
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = async (event) => {
       let data: WsInbound | null = null;
 
       try {
@@ -146,6 +201,31 @@ export default function ChatClient() {
       if (!data || typeof data !== "object" || !("type" in data)) return;
 
       if (data.type === "ERROR") {
+        if (data.code === 429) {
+          const until = Date.now() + 3000;
+          setError("You are sending messages too fast.");
+          setRateLimitedUntil(until);
+
+          if (rateLimitTimerRef.current) {
+            clearTimeout(rateLimitTimerRef.current);
+          }
+          if (errorClearTimerRef.current) {
+            clearTimeout(errorClearTimerRef.current);
+          }
+
+          rateLimitTimerRef.current = setTimeout(() => {
+            setRateLimitedUntil(null);
+            rateLimitTimerRef.current = null;
+          }, 3000);
+
+          errorClearTimerRef.current = setTimeout(() => {
+            setError("");
+            errorClearTimerRef.current = null;
+          }, 3000);
+
+          return;
+        }
+
         setStatus("ERROR");
         setError(`${data.code}: ${data.message}`);
 
@@ -157,6 +237,7 @@ export default function ChatClient() {
       if (data.type === "JOINED") {
         setRoomName(data.roomName);
         setEncrypted(Boolean(data.encrypted));
+        await loadMessages(0, false);
         setStatus("READY");
         return;
       }
@@ -185,6 +266,8 @@ export default function ChatClient() {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
       if (ws.readyState === WebSocket.OPEN) {
         try {
           ws.send(JSON.stringify({ type: "LEAVE", roomId }));
@@ -197,9 +280,12 @@ export default function ChatClient() {
 
       cleanup();
     };
-  }, [roomId, router, base]);
+  }, [roomId, router]);
 
-  const canSend = status === "READY" && connected;
+  const rateLimited =
+    rateLimitedUntil !== null && Date.now() < rateLimitedUntil;
+
+  const canSend = status === "READY" && connected && !rateLimited;
 
   function sendCurrentMessage() {
     if (!canSend) return;
@@ -225,11 +311,11 @@ export default function ChatClient() {
     }
   }
 
-  if (!base) {
+  if (!process.env.NEXT_PUBLIC_WS_API_URL) {
     return (
       <div className="pageShellNarrow">
         <div className="card centerText">
-          <p className="errorBox">Missing NEXT_PUBLIC_WS_API_URL</p>
+          <p className="errorBox">Missing WebSocket configuration</p>
         </div>
       </div>
     );
@@ -249,19 +335,35 @@ export default function ChatClient() {
 
         <hr />
 
-        {status !== "READY" && (
+        {(status !== "READY" || error) && (
           <div className="statusBox">
-            {status === "ERROR" ? (
-              <p>{error || "Something failed"}</p>
+            {error ? (
+              <p>{error}</p>
             ) : (
               <p>{status === "CONNECTING" ? "Connecting..." : "Joining..."}</p>
             )}
           </div>
         )}
 
+        {status === "READY" && hasMore && (
+          <div style={{ marginBottom: "0.75rem" }}>
+            <button
+              type="button"
+              className="primaryButton"
+              disabled={loadingOlder}
+              onClick={() => loadMessages(page + 1, true)}
+            >
+              {loadingOlder ? "Loading..." : "Load older messages"}
+            </button>
+          </div>
+        )}
+
         <div className={styles.messages} ref={messagesRef}>
           {messages.map((m, i) => (
-            <div key={i} className={styles.message}>
+            <div
+              key={`${m.timestamp}-${m.username}-${i}`}
+              className={styles.message}
+            >
               <div className={styles.messageTopRow}>
                 <div className={styles.sender}>{m.username}</div>
                 <div className={styles.timestamp}>
@@ -285,7 +387,7 @@ export default function ChatClient() {
           <textarea
             ref={textAreaRef}
             id="message"
-            placeholder={canSend ? "Enter message" : "Not connected"}
+            placeholder={canSend ? "Enter message" : "Slow down a moment"}
             disabled={!canSend}
             className={styles.input}
             value={message}

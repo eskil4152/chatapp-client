@@ -11,8 +11,8 @@ import { useSearchParams } from "next/navigation";
 import styles from "../../style/Chat.module.css";
 import formatTimestamp from "@/src/tools/FormatTimestamp";
 import useChatHistory from "@/src/hooks/useChatHistory";
-import useChatSocket from "@/src/hooks/useChatSocket";
-import { WsChat } from "@/src/types/WsChatTypes";
+import { useAppSocket } from "@/src/hooks/useAppSocket";
+import { WsChat, WsInbound } from "@/src/types/WsChatTypes";
 
 export default function ChatClient() {
   const searchParams = useSearchParams();
@@ -28,8 +28,17 @@ export default function ChatClient() {
 
 function ChatClientInner({ roomId }: { roomId: string }) {
   const [message, setMessage] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [encrypted, setEncrypted] = useState(false);
+  const [error, setError] = useState("");
+  const [rateLimited, setRateLimited] = useState(false);
+
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const rateLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { connected, error: socketError, sendJson, subscribe } = useAppSocket();
 
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
@@ -38,24 +47,9 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     return loadMessages(0, false);
   }, [loadMessages]);
 
-  const onIncomingMessageAction = useCallback(
-    (updater: (prev: WsChat[]) => WsChat[]) => {
-      setMessages(updater);
-    },
-    [setMessages],
-  );
-
-  const { roomName, encrypted, status, error, canSend, sendCurrentMessage } =
-    useChatSocket({
-      roomId,
-      onIncomingMessageAction,
-      onJoinedAction,
-    });
-
   useEffect(() => {
     const el = messagesRef.current;
     if (!el) return;
-
     el.scrollTop = el.scrollHeight;
   }, [messages]);
 
@@ -67,13 +61,91 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   }, [message]);
 
+  useEffect(() => {
+    if (!roomId || !connected) return;
+
+    sendJson({ type: "JOIN", roomId });
+
+    return () => {
+      sendJson({ type: "LEAVE", roomId });
+    };
+  }, [roomId, connected, sendJson]);
+
+  useEffect(() => {
+    const unsubscribe = subscribe(async (data: WsInbound) => {
+      if (data.type === "ERROR") {
+        if (data.code === 429) {
+          setError("You are sending messages too fast.");
+          setRateLimited(true);
+
+          if (rateLimitTimerRef.current) {
+            clearTimeout(rateLimitTimerRef.current);
+          }
+          if (errorClearTimerRef.current) {
+            clearTimeout(errorClearTimerRef.current);
+          }
+
+          rateLimitTimerRef.current = setTimeout(() => {
+            setRateLimited(false);
+            rateLimitTimerRef.current = null;
+          }, 3000);
+
+          errorClearTimerRef.current = setTimeout(() => {
+            setError("");
+            errorClearTimerRef.current = null;
+          }, 3000);
+
+          return;
+        }
+
+        setError(`${data.code}: ${data.message}`);
+        return;
+      }
+
+      if (data.type === "JOINED") {
+        if (data.roomId !== roomId) return;
+
+        setRoomName(data.roomName);
+        setEncrypted(Boolean(data.encrypted));
+
+        try {
+          await onJoinedAction();
+        } catch {
+          setError("Failed to load chat history");
+        }
+        return;
+      }
+
+      if ("username" in data && "content" in data) {
+        setMessages((prev) => [...prev, data as WsChat]);
+      }
+    });
+
+    return unsubscribe;
+  }, [roomId, onJoinedAction, setMessages, subscribe]);
+
+  const status: "CONNECTING" | "JOINING" | "READY" | "ERROR" = error
+    ? "ERROR"
+    : !connected
+      ? "CONNECTING"
+      : roomName
+        ? "READY"
+        : "JOINING";
+
+  const canSend = status === "READY" && !rateLimited;
+
   const handleSend = () => {
     if (!canSend) return;
 
     const trimmed = message.trim();
     if (!trimmed) return;
 
-    sendCurrentMessage(trimmed);
+    sendJson({
+      type: "MESSAGE",
+      roomId,
+      message: trimmed,
+    });
+
     setMessage("");
   };
 
@@ -83,6 +155,8 @@ function ChatClientInner({ roomId }: { roomId: string }) {
       handleSend();
     }
   };
+
+  const combinedError = error || socketError;
 
   if (!process.env.NEXT_PUBLIC_WS_API_URL) {
     return (
@@ -98,7 +172,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     <div className={styles.container}>
       <div className={styles.card}>
         <h2 className={styles.title}>
-          {roomName ? roomName : "Room"}{" "}
+          {roomName || "Room"}{" "}
           {roomName && (
             <span className={styles.roomMeta}>
               {encrypted ? "Encrypted" : "Not encrypted"}
@@ -108,10 +182,10 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
         <hr />
 
-        {(status !== "READY" || error) && (
+        {(status !== "READY" || combinedError) && (
           <div className="statusBox">
-            {error ? (
-              <p>{error}</p>
+            {combinedError ? (
+              <p>{combinedError}</p>
             ) : (
               <p>{status === "CONNECTING" ? "Connecting..." : "Joining..."}</p>
             )}
@@ -159,7 +233,6 @@ function ChatClientInner({ roomId }: { roomId: string }) {
         >
           <textarea
             ref={textAreaRef}
-            id="message"
             placeholder={canSend ? "Enter message" : "Slow down a moment"}
             disabled={!canSend}
             className={styles.input}

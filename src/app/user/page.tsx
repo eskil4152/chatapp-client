@@ -170,9 +170,9 @@ export default function UserInfo() {
                 <Image
                   src={form.avatarUrl}
                   alt="Avatar"
-                  width={400}
-                  height={400}
-                  className="avatar"
+                  width={250}
+                  height={250}
+                  className={styles.profileImage}
                 />
               </div>
             ) : (

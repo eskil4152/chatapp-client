@@ -109,3 +109,54 @@
     background: #44465c;
     transform: translateY(-2px);
 }
+
+.avatarBox {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+}
+
+
+.avatarBox img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatarPlaceholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.1;
+    overflow: hidden;
+}
+
+.statusDot {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+
+    width: 15px;
+    height: 15px;
+
+    border-radius: 50%;
+    border: 3px solid #466874;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+
+.online {
+    background: #22c55e;
+    box-shadow: 0 0 4px #22c55e;
+}
+
+.offline {
+    background: #9ca3af;
+}

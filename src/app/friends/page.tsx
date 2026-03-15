@@ -7,12 +7,14 @@ import Link from "next/link";
 import Image from "next/image";
 import GetFriendsAPI from "@/src/api/friends/GetFriendsAPI";
 import PrivateMessageAPI from "@/src/api/rooms/PrivateMessageAPI";
+import img from "@/public/default_profile.png";
 
 export default function Friends() {
   const router = useRouter();
 
   type Friend = {
     username: string;
+    online: boolean;
     avatarUrl: string | null;
   };
 
@@ -51,17 +53,19 @@ export default function Friends() {
                   }
                 >
                   <div className={styles.friendCardLeft}>
-                    {friend.avatarUrl ? (
+                    <div className={styles.avatarBox}>
                       <Image
-                        src={friend.avatarUrl}
+                        src={friend.avatarUrl || img}
                         alt={`${friend.username} avatar`}
                         width={48}
                         height={48}
-                        className="avatarSmall"
                       />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>No avatar</div>
-                    )}
+                      <span
+                        className={`${styles.statusDot} ${
+                          friend.online ? styles.online : styles.offline
+                        }`}
+                      />
+                    </div>
                   </div>
                   <div className={styles.friendCardRight}>
                     <div className={styles.friendsUsername}>

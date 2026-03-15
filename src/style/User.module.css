@@ -74,3 +74,8 @@
 .passwordLink {
     display: inline-block;
 }
+
+.profileImage {
+    object-fit: cover;
+    border-radius: 10px;
+}

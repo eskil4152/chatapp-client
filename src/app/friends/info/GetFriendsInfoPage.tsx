@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import GetFriendInfoAPI from "@/src/api/friends/GetFriendInfoAPI";
 import Image from "next/image";
 import styles from "@/src/style/Friends.module.css";
+import img from "../../../../public/default_profile.png";
 
 type Friend = {
   username: string;
@@ -14,6 +15,7 @@ type Friend = {
   avatarUrl?: string | null;
   birthday?: string;
   createdAt?: string;
+  online?: boolean;
 };
 
 export default function GetFriendsInfoPage() {
@@ -53,17 +55,14 @@ export default function GetFriendsInfoPage() {
 
   return (
     <div>
-      {friend.avatarUrl ? (
+      <div className={"avatarBox"}>
         <Image
-          src={friend.avatarUrl}
+          src={friend.avatarUrl || img}
           alt={`${friend.username} avatar`}
           width={48}
           height={48}
-          className="avatar"
         />
-      ) : (
-        <div className={styles.avatarPlaceholder}>No avatar</div>
-      )}
+      </div>
       <h1>{friend.username}</h1>
       {friend.fullName && <p>{friend.fullName}</p>}
       {friend.bio && <p>{friend.bio}</p>}

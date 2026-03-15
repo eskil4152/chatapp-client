@@ -1,13 +1,13 @@
 "use client";
 
-import UserAPI from "@/src/api/UserAPI";
+import UserAPI from "@/src/api/user/UserAPI";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import EditProfileAPI from "@/src/api/EditProfileAPI";
+import EditProfileAPI from "@/src/api/user/EditProfileAPI";
 import { useRouter } from "next/navigation";
 import styles from "../../style/User.module.css";
 import Link from "next/link";
-import LogoutAPI from "@/src/api/LogoutAPI";
+import LogoutAPI from "@/src/api/auth/LogoutAPI";
 
 export default function UserInfo() {
   const router = useRouter();

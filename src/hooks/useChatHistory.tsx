@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import GetChatAPI from "@/src/api/GetChatsAPI";
+import GetChatAPI from "@/src/api/chats/GetChatsAPI";
 import { WsChat } from "@/src/types/WsChatTypes";
 
 const PAGE_SIZE = 25;

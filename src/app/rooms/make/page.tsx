@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import MakeRoomAPI from "@/src/api/MakeRoomAPI";
+import MakeRoomAPI from "@/src/api/rooms/MakeRoomAPI";
 
 export default function AddRoom() {
   const router = useRouter();

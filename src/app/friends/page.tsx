@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import styles from "../../style/Friends.module.css";
 import Link from "next/link";
 import Image from "next/image";
-import GetFriendsAPI from "@/src/api/GetFriendsAPI";
-import PrivateMessageAPI from "@/src/api/PrivateMessageAPI";
+import GetFriendsAPI from "@/src/api/friends/GetFriendsAPI";
+import PrivateMessageAPI from "@/src/api/rooms/PrivateMessageAPI";
 
 export default function Friends() {
   const router = useRouter();

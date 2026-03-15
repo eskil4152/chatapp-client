@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import JoinRoomAPI from "@/src/api/JoinRoomAPI";
+import JoinRoomAPI from "@/src/api/rooms/JoinRoomAPI";
 
 export default function JoinRoom() {
   const router = useRouter();

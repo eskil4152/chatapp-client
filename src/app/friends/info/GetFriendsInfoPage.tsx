@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import GetFriendInfoAPI from "@/src/api/GetFriendInfoAPI";
+import GetFriendInfoAPI from "@/src/api/friends/GetFriendInfoAPI";
 import Image from "next/image";
 import styles from "@/src/style/Friends.module.css";
 

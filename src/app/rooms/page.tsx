@@ -1,11 +1,11 @@
 "use client";
 
-import GetRoomsAPI from "@/src/api/GetRoomsAPI";
+import GetRoomsAPI from "@/src/api/rooms/GetRoomsAPI";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../../style/Rooms.module.css";
-import LeaveRoomAPI from "@/src/api/LeaveRoomAPI";
+import LeaveRoomAPI from "@/src/api/rooms/LeaveRoomAPI";
 
 export default function Rooms() {
   const router = useRouter();

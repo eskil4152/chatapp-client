@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import GetFriendInfoAPI from "@/src/api/friends/GetFriendInfoAPI";
 import Image from "next/image";
-import styles from "@/src/style/Friends.module.css";
+import styles from "@/src/style/modules/Friends.module.css";
 import img from "../../../../public/default_profile.png";
 
 type Friend = {
@@ -18,7 +18,7 @@ type Friend = {
   online?: boolean;
 };
 
-export default function GetFriendsInfoPage() {
+export default function GetFriendsInfoClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const username = searchParams.get("username");

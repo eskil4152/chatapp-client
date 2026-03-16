@@ -4,22 +4,16 @@ import GetRoomsAPI from "@/src/api/rooms/GetRoomsAPI";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styles from "../../style/Rooms.module.css";
-import LeaveRoomAPI from "@/src/api/rooms/LeaveRoomAPI";
+import styles from "../../style/modules/Rooms.module.css";
+import { OwnerRoomCard } from "@/src/components/cards/OwnerRoomCard";
+import RoomCard from "@/src/components/cards/RoomCard";
+import FriendRoomCard from "@/src/components/cards/FriendRoomCard";
 
 export default function Rooms() {
   const router = useRouter();
 
-  type Room = {
-    roomId: string;
-    roomName: string;
-    encrypted: boolean;
-    role: string;
-    type: string;
-  };
-
   const { loading, error, response } = GetRoomsAPI();
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<RoomType[]>([]);
 
   useEffect(() => {
     if (response?.status === 401) {
@@ -33,13 +27,13 @@ export default function Rooms() {
     }
   }, [response]);
 
-  const ownedRooms = rooms.filter(
-    (r) => r.role === "OWNER" && r.type === "GROUP",
-  );
   const joinedRooms = rooms.filter(
-    (r) => r.role === "MEMBER" && r.type === "GROUP",
+    (room) => room.type !== "PRIVATE" && room.role !== "OWNER",
   );
-  const privateRooms = rooms.filter((r) => r.type === "PRIVATE");
+
+  const ownedRooms = rooms.filter((room) => room.role === "OWNER");
+
+  const privateRooms = rooms.filter((room) => room.type === "PRIVATE");
 
   return (
     <div className={styles.container}>
@@ -51,33 +45,14 @@ export default function Rooms() {
 
           <div className={styles.roomList}>
             {ownedRooms.map((room) => (
-              <div key={room.roomId} className={styles.roomRow}>
-                <button
-                  className={styles.roomCard}
-                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
-                >
-                  <div className={styles.roomCardLeft}>
-                    <div className={styles.roomName}>{room.roomName}</div>
-                  </div>
-
-                  <div className={styles.roomCardRight}>
-                    <span className={styles.roomMeta}>
-                      {room.encrypted ? "Encrypted" : "Not encrypted"}
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.optionsButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/rooms/edit?id=${room.roomId}`);
-                  }}
-                >
-                  Edit room
-                </button>
-              </div>
+              <OwnerRoomCard
+                roomId={room.roomId}
+                roomName={room.roomName}
+                encrypted={room.encrypted}
+                type={room.type}
+                role={room.role}
+                key={room.roomId}
+              />
             ))}
           </div>
         </>
@@ -89,41 +64,7 @@ export default function Rooms() {
 
           <div className={styles.roomList}>
             {joinedRooms.map((room) => (
-              <div key={room.roomId} className={styles.roomRow}>
-                <button
-                  className={styles.roomCard}
-                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
-                >
-                  <div className={styles.roomCardLeft}>
-                    <div className={styles.roomName}>{room.roomName}</div>
-                  </div>
-
-                  <div className={styles.roomCardRight}>
-                    <span className={styles.roomMeta}>
-                      {room.encrypted ? "Encrypted" : "Not encrypted"}
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.optionsButton}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    const res = await LeaveRoomAPI(room.roomId);
-
-                    if (res.ok) {
-                      setRooms((prev) =>
-                        prev.filter((r) => r.roomId !== room.roomId),
-                      );
-                    } else if (res.status === 401) {
-                      router.replace("/login");
-                    }
-                  }}
-                >
-                  Leave
-                </button>
-              </div>
+              <RoomCard key={room.roomId} {...room} onLeave={handleLeave} />
             ))}
           </div>
         </>
@@ -135,16 +76,14 @@ export default function Rooms() {
 
           <div className={styles.roomList}>
             {privateRooms.map((room) => (
-              <div key={room.roomId} className={styles.roomRow}>
-                <button
-                  className={styles.roomCard}
-                  onClick={() => router.replace(`/chat?id=${room.roomId}`)}
-                >
-                  <div className={styles.roomCardLeft}>
-                    <div className={styles.roomName}>{room.roomName}</div>
-                  </div>
-                </button>
-              </div>
+              <FriendRoomCard
+                roomId={room.roomId}
+                roomName={room.roomName}
+                encrypted={room.encrypted}
+                type={room.type}
+                role={room.role}
+                key={room.roomId}
+              />
             ))}
           </div>
         </>
@@ -163,4 +102,8 @@ export default function Rooms() {
       </div>
     </div>
   );
+
+  function handleLeave(roomId: string) {
+    setRooms((prev) => prev.filter((r) => r.roomId !== roomId));
+  }
 }

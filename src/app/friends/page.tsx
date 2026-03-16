@@ -2,24 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import styles from "../../style/Friends.module.css";
+import styles from "../../style/modules/Friends.module.css";
 import Link from "next/link";
-import Image from "next/image";
 import GetFriendsAPI from "@/src/api/friends/GetFriendsAPI";
-import PrivateMessageAPI from "@/src/api/rooms/PrivateMessageAPI";
-import img from "@/public/default_profile.png";
+import FriendCard from "@/src/components/cards/FriendCard";
 
 export default function Friends() {
   const router = useRouter();
 
-  type Friend = {
-    username: string;
-    online: boolean;
-    avatarUrl: string | null;
-  };
-
   const { loading, error, response } = GetFriendsAPI();
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<FriendType[]>([]);
 
   useEffect(() => {
     if (response?.status === 401) {
@@ -42,57 +34,8 @@ export default function Friends() {
       {friends.length > 0 && (
         <>
           <div className={styles.friendsList}>
-            {friends.map((friend: Friend) => (
-              <div key={friend.username} className={styles.friendRow}>
-                <button
-                  className={styles.friendCard}
-                  onClick={() =>
-                    router.replace(
-                      `/friends/info?username=${encodeURIComponent(friend.username)}`,
-                    )
-                  }
-                >
-                  <div className={styles.friendCardLeft}>
-                    <div className={styles.avatarBox}>
-                      <Image
-                        src={friend.avatarUrl || img}
-                        alt={`${friend.username} avatar`}
-                        width={48}
-                        height={48}
-                      />
-                      <span
-                        className={`${styles.statusDot} ${
-                          friend.online ? styles.online : styles.offline
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  <div className={styles.friendCardRight}>
-                    <div className={styles.friendsUsername}>
-                      {friend.username}
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.chatButton}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-
-                    const res = await PrivateMessageAPI(friend.username);
-
-                    if (res.ok) {
-                      const roomId = await res.text();
-                      router.push(`/chat?id=${roomId}`);
-                    } else if (res.status === 401) {
-                      router.replace("/login");
-                    }
-                  }}
-                >
-                  Send message
-                </button>
-              </div>
+            {friends.map((friend: FriendType) => (
+              <FriendCard key={friend.username} {...friend} />
             ))}
           </div>
         </>

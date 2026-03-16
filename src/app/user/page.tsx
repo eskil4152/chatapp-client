@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import EditProfileAPI from "@/src/api/user/EditProfileAPI";
 import { useRouter } from "next/navigation";
-import styles from "../../style/User.module.css";
+import styles from "../../style/modules/User.module.css";
 import Link from "next/link";
 import LogoutAPI from "@/src/api/auth/LogoutAPI";
 

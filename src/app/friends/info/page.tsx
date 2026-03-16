@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import GetFriendsInfoPage from "@/src/app/friends/info/GetFriendsInfoPage";
+import GetFriendsInfoClient from "@/src/app/friends/info/GetFriendsInfoClient";
 
 export default function Page() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
-      <GetFriendsInfoPage />
+      <GetFriendsInfoClient />
     </Suspense>
   );
 }

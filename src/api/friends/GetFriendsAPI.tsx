@@ -1,5 +1,5 @@
-import useLoading from "@/src/tools/UseLoading";
-import fetchJSON from "@/src/tools/FetchJSON";
+import useLoading from "@/src/hooks/UseLoading";
+import fetchJSON from "@/src/lib/FetchJSON";
 
 export default function GetFriendsAPI() {
   const { loading, error, response } = useLoading(

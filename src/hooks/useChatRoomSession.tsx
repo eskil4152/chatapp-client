@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { WsChat, WsInbound } from "@/src/types/WsChatTypes";
+import { RoomUser, WsChat, WsInbound } from "@/src/types/WsChatTypes";
 
 type UseChatRoomSessionProps = {
   roomId: string;
@@ -23,6 +23,7 @@ export default function useChatRoomSession({
   const [error, setError] = useState("");
   const [rateLimited, setRateLimited] = useState(false);
   const [joined, setJoined] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<RoomUser[]>([]);
 
   const rateLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -87,6 +88,13 @@ export default function useChatRoomSession({
         return;
       }
 
+      if (data.type === "USERS_IN_ROOM") {
+        if (data.roomId !== roomId) return;
+
+        setOnlineUsers(data.users);
+        return;
+      }
+
       if ("username" in data && "content" in data) {
         setMessages((prev) => [...prev, data as WsChat]);
       }
@@ -108,5 +116,6 @@ export default function useChatRoomSession({
     encrypted,
     error,
     rateLimited,
+    onlineUsers,
   };
 }

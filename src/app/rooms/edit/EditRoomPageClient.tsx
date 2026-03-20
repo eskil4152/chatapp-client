@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import EditRoomAPI from "@/src/api/EditRoomAPI";
-import DeleteRoomAPI from "@/src/api/DeleteRoomAPI";
+import EditRoomAPI from "@/src/api/rooms/EditRoomAPI";
+import DeleteRoomAPI from "@/src/api/rooms/DeleteRoomAPI";
 
 export default function EditRoomPageClient() {
   const router = useRouter();

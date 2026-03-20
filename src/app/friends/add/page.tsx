@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import AddFriendAPI from "@/src/api/AddFriendAPI";
+import AddFriendAPI from "@/src/api/friends/AddFriendAPI";
 
 export default function Page() {
   const router = useRouter();

@@ -18,7 +18,20 @@ export type WsChat = {
   timestamp: string;
 };
 
-export type WsInbound = WsJoined | WsError | WsChat;
+export type WsUsersInRoom = {
+  type: "USERS_IN_ROOM";
+  roomId: string;
+  users: RoomUser[];
+};
+
+export type RoomUser = {
+  id: string;
+  username: string;
+  avatar: string;
+  online: boolean;
+};
+
+export type WsInbound = WsJoined | WsError | WsChat | WsUsersInRoom;
 
 export type HistoryMessage = {
   id: string;

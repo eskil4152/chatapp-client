@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import ChangePasswordAPI from "@/src/api/ChangePasswordAPI";
+import ChangePasswordAPI from "@/src/api/user/ChangePasswordAPI";
 
 export default function ChangePasswordPage() {
   const router = useRouter();

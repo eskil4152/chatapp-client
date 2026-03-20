@@ -1,12 +1,10 @@
-"use client";
+import useLoading from "@/src/hooks/UseLoading";
+import fetchJSON from "@/src/lib/FetchJSON";
 
-import fetchJSON from "@/src/tools/FetchJSON";
-import useLoading from "@/src/tools/UseLoading";
-
-export default function UserApi() {
+export default function GetFriendsAPI() {
   const { loading, error, response } = useLoading(
     async () =>
-      await fetchJSON(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/user`, {
+      await fetchJSON(`${process.env.NEXT_PUBLIC_SERVER_API_URL}/api/friends`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import LogInAPI from "@/src/api/LoginAPI";
+import LogInAPI from "@/src/api/auth/LoginAPI";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 

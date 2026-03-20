@@ -1,18 +1,15 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import styles from "../../style/Chat.module.css";
-import formatTimestamp from "@/src/tools/FormatTimestamp";
+import styles from "../../style/modules/Chat.module.css";
 import useChatHistory from "@/src/hooks/useChatHistory";
-import useChatSocket from "@/src/hooks/useChatSocket";
-import { WsChat } from "@/src/types/WsChatTypes";
+import { useAppSocket } from "@/src/hooks/useAppSocket";
+import ChatMessageCard from "@/src/components/cards/ChatMessageCard";
+import ChatHeader from "@/src/components/chat/ChatHeader";
+import ChatStatus from "@/src/components/chat/ChatStatus";
+import ChatInput from "@/src/components/chat/ChatInput";
+import useChatRoomSession from "@/src/hooks/useChatRoomSession";
 
 export default function ChatClient() {
   const searchParams = useSearchParams();
@@ -28,61 +25,54 @@ export default function ChatClient() {
 
 function ChatClientInner({ roomId }: { roomId: string }) {
   const [message, setMessage] = useState("");
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const { connected, error: socketError, sendJson, subscribe } = useAppSocket();
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
 
-  const onJoinedAction = useCallback(() => {
-    return loadMessages(0, false);
-  }, [loadMessages]);
-
-  const onIncomingMessageAction = useCallback(
-    (updater: (prev: WsChat[]) => WsChat[]) => {
-      setMessages(updater);
-    },
-    [setMessages],
-  );
-
-  const { roomName, encrypted, status, error, canSend, sendCurrentMessage } =
-    useChatSocket({
+  const { joined, roomName, encrypted, error, rateLimited, onlineUsers } =
+    useChatRoomSession({
       roomId,
-      onIncomingMessageAction,
-      onJoinedAction,
+      connected,
+      subscribe,
+      sendJson,
+      loadMessages,
+      setMessages,
     });
 
   useEffect(() => {
     const el = messagesRef.current;
     if (!el) return;
-
     el.scrollTop = el.scrollHeight;
   }, [messages]);
 
-  useEffect(() => {
-    const el = textAreaRef.current;
-    if (!el) return;
+  const status: "CONNECTING" | "JOINING" | "READY" | "ERROR" = error
+    ? "ERROR"
+    : !connected
+      ? "CONNECTING"
+      : joined
+        ? "READY"
+        : "JOINING";
 
-    el.style.height = "0px";
-    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
-  }, [message]);
+  const canSend = status === "READY" && !rateLimited;
+  const combinedError = error || socketError;
 
-  const handleSend = () => {
+  function handleSend() {
     if (!canSend) return;
 
     const trimmed = message.trim();
     if (!trimmed) return;
 
-    sendCurrentMessage(trimmed);
-    setMessage("");
-  };
+    sendJson({
+      type: "MESSAGE",
+      roomId,
+      message: trimmed,
+    });
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+    setMessage("");
+  }
 
   if (!process.env.NEXT_PUBLIC_WS_API_URL) {
     return (
@@ -97,26 +87,10 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h2 className={styles.title}>
-          {roomName ? roomName : "Room"}{" "}
-          {roomName && (
-            <span className={styles.roomMeta}>
-              {encrypted ? "Encrypted" : "Not encrypted"}
-            </span>
-          )}
-        </h2>
-
+        <ChatHeader roomName={roomName} encrypted={encrypted} />
         <hr />
 
-        {(status !== "READY" || error) && (
-          <div className="statusBox">
-            {error ? (
-              <p>{error}</p>
-            ) : (
-              <p>{status === "CONNECTING" ? "Connecting..." : "Joining..."}</p>
-            )}
-          </div>
-        )}
+        <ChatStatus status={status} error={combinedError} />
 
         {status === "READY" && hasMore && (
           <div style={{ marginBottom: "0.75rem" }}>
@@ -133,50 +107,37 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
         <div className={styles.messages} ref={messagesRef}>
           {messages.map((m, i) => (
-            <div
+            <ChatMessageCard
               key={`${m.timestamp}-${m.username}-${i}`}
-              className={styles.message}
-            >
-              <div className={styles.messageTopRow}>
-                <div className={styles.sender}>{m.username}</div>
-                <div className={styles.timestamp}>
-                  {formatTimestamp(m.timestamp)}
-                </div>
-              </div>
-              <div className={styles.content}>{m.content}</div>
-            </div>
+              type={m.type}
+              username={m.username}
+              content={m.content}
+              timestamp={m.timestamp}
+            />
           ))}
         </div>
 
         <hr />
 
-        <form
-          className={styles.form}
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-        >
-          <textarea
-            ref={textAreaRef}
-            id="message"
-            placeholder={canSend ? "Enter message" : "Slow down a moment"}
-            disabled={!canSend}
-            className={styles.input}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={1}
-          />
+        <ChatInput
+          message={message}
+          setMessage={setMessage}
+          canSend={canSend}
+          onSend={handleSend}
+          textAreaRef={textAreaRef}
+        />
+      </div>
 
-          <button
-            type="submit"
-            disabled={!canSend}
-            className={`primaryButton ${styles.button}`}
-          >
-            Send
-          </button>
-        </form>
+      <div className={styles.sidebar}>
+        <p className={styles.sidebarTitle}>Online — {onlineUsers.length}</p>
+        <ul className={styles.onlineList}>
+          {onlineUsers.map((user) => (
+            <li key={user.id} className={styles.onlineUser}>
+              <span className={styles.onlineDot} />
+              {user.username}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

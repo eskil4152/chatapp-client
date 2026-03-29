@@ -1,13 +1,13 @@
 "use client";
 
-import UserAPI from "@/src/api/user/UserAPI";
+import useUser from "@/src/features/user/hooks/useUser";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import EditProfileAPI from "@/src/api/user/EditProfileAPI";
+import editProfile from "@/src/features/user/api/editProfile";
 import { useRouter } from "next/navigation";
-import styles from "../../style/modules/User.module.css";
+import styles from "@/src/style/modules/User.module.css";
 import Link from "next/link";
-import LogoutAPI from "@/src/api/auth/LogoutAPI";
+import logout from "@/src/features/auth/api/logout";
 
 export default function UserInfo() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function UserInfo() {
     return link.startsWith("http://") || link.startsWith("https://");
   }
 
-  const { loading, response } = UserAPI();
+  const { loading, error, response } = useUser();
   const [username, setUsername] = useState("");
 
   const [form, setForm] = useState({
@@ -31,7 +31,13 @@ export default function UserInfo() {
 
   useEffect(() => {
     if (response?.status === 200) {
-      const { username, bio, email, fullName, avatarUrl } = response.data;
+      const { username, bio, email, fullName, avatarUrl } = response.data as {
+        username: string;
+        bio?: string;
+        email?: string;
+        fullName?: string;
+        avatarUrl?: string;
+      };
       setUsername(username);
 
       setForm({
@@ -61,13 +67,11 @@ export default function UserInfo() {
 
   if (response?.status === 401) return null;
 
-  if (response?.status !== 200) {
+  if (error || response?.status !== 200) {
     return (
       <div className="pageShellNarrow">
         <div className="card centerText">
-          <p className="errorBox">
-            Failed to load user. Status: {response?.status}
-          </p>
+          <p className="errorBox">Failed to load user.</p>
         </div>
       </div>
     );
@@ -81,7 +85,7 @@ export default function UserInfo() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await EditProfileAPI(form);
+    const res = await editProfile(form);
 
     if (res.ok) {
       setEditing(false);
@@ -94,7 +98,7 @@ export default function UserInfo() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
+      <div className="card">
         <div className={styles.topActions}>
           <button
             onClick={() => setEditing(!editing)}
@@ -199,7 +203,7 @@ export default function UserInfo() {
             type="button"
             className="dangerButton"
             onClick={async () => {
-              await LogoutAPI().then(() => router.push("/login"));
+              await logout().then(() => router.push("/login"));
             }}
           >
             Log out

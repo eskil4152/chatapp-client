@@ -1,5 +1,5 @@
 .container {
-    max-width: 1100px; /* widened to fit sidebar */
+    max-width: 1100px;
     margin: 40px auto;
     padding: 0 20px;
     display: flex;
@@ -11,28 +11,28 @@
 .card {
     flex: 1;
     min-width: 0; /* prevents flex blowout on long messages */
-    background: #344955;
-    border-radius: 14px;
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
     padding: 25px;
-    color: white;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    color: var(--text-main);
+    box-shadow: var(--shadow-card);
 }
 
 /* --- Sidebar --- */
 .sidebar {
     width: 200px;
     flex-shrink: 0;
-    background: #344955;
-    border-radius: 14px;
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
     padding: 20px;
-    color: white;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    color: var(--text-main);
+    box-shadow: var(--shadow-card);
 }
 
 .sidebarTitle {
     font-size: 0.95rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.72);
+    color: var(--text-muted);
     margin-bottom: 12px;
 }
 
@@ -50,7 +50,7 @@
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
-    color: white;
+    color: var(--text-main);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -64,7 +64,6 @@
     flex-shrink: 0;
 }
 
-/* --- Unchanged below --- */
 .title {
     font-size: 1.4rem;
     font-weight: 700;
@@ -72,14 +71,14 @@
 }
 
 .roomMeta {
-    color: rgba(255,255,255,0.72);
+    color: var(--text-muted);
     font-size: 0.95rem;
     font-weight: 500;
 }
 
 .messages {
-    background: #50727B;
-    border-radius: 10px;
+    background: var(--bg-main);
+    border-radius: var(--radius-input);
     max-height: 350px;
     overflow-y: auto;
     margin: 15px 0;
@@ -88,7 +87,7 @@
 
 .message {
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
+    border-bottom: 1px solid var(--border-soft);
 }
 
 .message:last-child {
@@ -104,7 +103,7 @@
 
 .content {
     font-size: 1rem;
-    color: white;
+    color: var(--text-main);
     line-height: 1.35;
     word-break: break-word;
 }
@@ -129,8 +128,8 @@
     font: inherit;
     line-height: 1.4;
     display: block;
-    background: #5F8691;
-    color: white;
+    background: var(--bg-input);
+    color: var(--text-main);
 }
 
 .button {

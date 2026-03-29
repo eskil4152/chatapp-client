@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import RegisterAPI from "@/src/api/auth/RegisterAPI";
+import register from "@/src/features/auth/api/register";
 
 export default function Page() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function Page() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await RegisterAPI(username, password);
+    const data = await register(username, password);
 
     if (data.status === 201) {
       router.replace("/");
@@ -63,7 +63,7 @@ export default function Page() {
 
           <button
             type="submit"
-            disabled={password.length < 8}
+            disabled={password.length < 8 || username.length < 3}
             className={`primaryButton ${password.length < 8 || username.length < 3 ? "buttonDisabled" : ""}`}
           >
             Submit

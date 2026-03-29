@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import JoinRoomAPI from "@/src/api/rooms/JoinRoomAPI";
+import joinRoom from "@/src/features/rooms/api/joinRoom";
 
 export default function JoinRoom() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function JoinRoom() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await JoinRoomAPI(roomId);
+    const data = await joinRoom(roomId);
 
     if (data.status === 200) {
       router.replace("/");

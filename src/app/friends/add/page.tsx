@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import AddFriendAPI from "@/src/api/friends/AddFriendAPI";
+import addFriend from "@/src/features/friends/api/addFriend";
 
 export default function Page() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function Page() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await AddFriendAPI(username);
+    const data = await addFriend(username);
 
     if (data.status === 200) {
       router.replace("/friends");

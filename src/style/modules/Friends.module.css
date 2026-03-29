@@ -1,41 +1,3 @@
-.container {
-    max-width: 700px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-.friendsList {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.friendCard {
-    background: #344955;
-    border-radius: 14px;
-    padding: 20px 24px;
-    flex: 1;
-    color: white;
-    cursor: pointer;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-
-    transition:
-            transform 0.15s ease,
-            box-shadow 0.2s ease,
-            background 0.2s ease;
-}
-
-.friendCard:hover {
-    transform: translateY(-3px);
-    background: #3f5d67;
-    box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-}
-
 .friendCardRight {
     flex: 1;
 }
@@ -53,70 +15,12 @@
     letter-spacing: 0.5px;
 }
 
-.roomMeta {
-    font-size: 0.8rem;
-    opacity: 0.8;
-}
-
-.roomName {
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-.empty {
-    text-align: center;
-    padding: 30px;
-    font-size: 1.2rem;
-    color: white;
-}
-
-.actions {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.sectionTitle {
-    margin: 10px 0 14px 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: white;
-}
-
-.friendRow {
-    display: flex;
-    gap: 12px;
-    align-items: stretch;
-}
-
-.chatButton {
-    min-width: 88px;
-    border: none;
-    border-radius: 12px;
-    background: #35374B;
-    color: white;
-    font-weight: 600;
-    padding: 0 16px;
-    cursor: pointer;
-    transition:
-            background 0.15s ease,
-            transform 0.1s ease;
-}
-
-.chatButton:hover {
-    background: #44465c;
-    transform: translateY(-2px);
-}
-
 .avatarBox {
     position: relative;
     width: 48px;
     height: 48px;
     flex: 0 0 48px;
 }
-
 
 .avatarBox img {
     width: 48px;
@@ -143,12 +47,10 @@
     position: absolute;
     right: -2px;
     bottom: -2px;
-
     width: 15px;
     height: 15px;
-
     border-radius: 50%;
-    border: 3px solid #466874;
+    border: 3px solid var(--status-dot-border);
     box-shadow: 0 0 3px rgba(0,0,0,0.4);
 }
 

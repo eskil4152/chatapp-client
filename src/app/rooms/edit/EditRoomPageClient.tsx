@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import EditRoomAPI from "@/src/api/rooms/EditRoomAPI";
-import DeleteRoomAPI from "@/src/api/rooms/DeleteRoomAPI";
+import editRoom from "@/src/features/rooms/api/editRoom";
+import deleteRoom from "@/src/features/rooms/api/deleteRoom";
 
 export default function EditRoomPageClient() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function EditRoomPageClient() {
       return;
     }
 
-    const data = await EditRoomAPI(roomId, roomName);
+    const data = await editRoom(roomId, roomName);
 
     if (data.status === 200) {
       router.replace("/rooms");
@@ -67,7 +67,7 @@ export default function EditRoomPageClient() {
               return;
             }
 
-            const res = await DeleteRoomAPI(roomId);
+            const res = await deleteRoom(roomId);
 
             if (res.ok) {
               router.push("/rooms");

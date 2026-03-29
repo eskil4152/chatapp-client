@@ -2,15 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import styles from "../../style/modules/Friends.module.css";
 import Link from "next/link";
-import GetFriendsAPI from "@/src/api/friends/GetFriendsAPI";
-import FriendCard from "@/src/components/cards/FriendCard";
+import useFriends from "@/src/features/friends/hooks/useFriends";
+import FriendCard from "@/src/features/friends/components/FriendCard";
+import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import { FriendType } from "@/src/features/friends/types";
 
 export default function Friends() {
   const router = useRouter();
+  const { subscribe } = useAppSocket();
 
-  const { loading, error, response } = GetFriendsAPI();
+  const { loading, error, response } = useFriends();
   const [friends, setFriends] = useState<FriendType[]>([]);
 
   useEffect(() => {
@@ -21,29 +23,39 @@ export default function Friends() {
 
   useEffect(() => {
     if (response?.status === 200) {
-      setFriends(response.data ?? []);
+      setFriends((response.data as FriendType[]) ?? []);
     }
   }, [response]);
 
-  return (
-    <div className={styles.container}>
-      <h2 className={styles.sectionTitle}>Friends</h2>
+  useEffect(() => {
+    const unsubscribe = subscribe((data) => {
+      if (data.type !== "FRIEND_PRESENCE") return;
+      setFriends((prev) =>
+        prev.map((f) => f.userId === data.userId ? { ...f, online: data.online } : f)
+      );
+    });
+    return unsubscribe;
+  }, [subscribe]);
 
-      {friends.length === 0 && <p className={styles.empty}>No friends :(</p>}
+  return (
+    <div className="pageList">
+      <h2 className="sectionTitle">Friends</h2>
+
+      {loading && <p className="empty">Loading...</p>}
+      {!loading && !!error && <p className="errorBox">Failed to load friends</p>}
+      {!loading && !error && friends.length === 0 && <p className="empty">No friends :(</p>}
 
       {friends.length > 0 && (
-        <>
-          <div className={styles.friendsList}>
-            {friends.map((friend: FriendType) => (
-              <FriendCard key={friend.username} {...friend} />
-            ))}
-          </div>
-        </>
+        <div className="itemList">
+          {friends.map((friend) => (
+            <FriendCard key={friend.username} {...friend} />
+          ))}
+        </div>
       )}
 
       <hr className="divider" />
 
-      <div className={styles.actions}>
+      <div className="pageActions">
         <Link href="/friends/add" className="primaryButton">
           Add friends
         </Link>

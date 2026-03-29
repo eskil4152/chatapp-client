@@ -3,6 +3,8 @@
     --bg-card: #344955;
     --bg-dark: #35374B;
     --bg-input: #5F8691;
+    --bg-card-hover: #3f5d67;
+    --bg-dark-hover: #44465c;
 
     --accent: #78AC83;
     --accent-hover: #88be93;
@@ -18,12 +20,17 @@
 
     --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.25);
     --shadow-hover: 0 5px 14px rgba(0, 0, 0, 0.25);
+    --shadow-list: 0 6px 18px rgba(0, 0, 0, 0.2);
+    --shadow-list-hover: 0 10px 26px rgba(0, 0, 0, 0.35);
 
     --radius-card: 14px;
     --radius-input: 10px;
     --radius-pill: 999px;
+
+    --status-dot-border: #466874;
 }
 
+/* --- Reset --- */
 * {
     box-sizing: border-box;
 }
@@ -81,6 +88,7 @@ hr {
     background: var(--border-soft);
 }
 
+/* --- Header --- */
 .header {
     background: var(--bg-card);
     display: grid;
@@ -127,18 +135,20 @@ hr {
     padding: 30px 20px;
 }
 
-.pageShell {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
+/* --- Page shells --- */
 .pageShellNarrow {
     max-width: 520px;
     margin: 60px auto;
     padding: 0 20px;
 }
 
+.pageList {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* --- Cards --- */
 .card {
     background: var(--bg-card);
     padding: 30px;
@@ -147,24 +157,74 @@ hr {
     box-shadow: var(--shadow-card);
 }
 
-.centerText {
-    text-align: center;
+.interactiveCard {
+    flex: 1;
+    border: none;
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
+    padding: 20px 24px;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-list);
+    transition:
+            transform 0.15s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease;
 }
 
-.pageTitle {
-    margin: 0 0 22px 0;
-    font-size: 1.7rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-align: center;
+.interactiveCard:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-list-hover);
 }
 
-.formStack {
+/* --- Lists --- */
+.itemList {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
 }
 
+.itemRow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.sectionTitle {
+    margin: 10px 0 14px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.empty {
+    text-align: center;
+    padding: 30px;
+    font-size: 1.2rem;
+}
+
+.pageActions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.itemName {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.itemMeta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* --- Buttons --- */
 .primaryButton,
 .secondaryButton,
 .dangerButton {
@@ -220,27 +280,23 @@ hr {
     text-decoration: underline;
 }
 
-.divider {
-    margin: 26px 0 10px 0;
+.actionButton {
+    min-width: 88px;
+    border: none;
+    border-radius: 12px;
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-weight: 600;
+    padding: 0 16px;
+    cursor: pointer;
+    transition:
+            background 0.15s ease,
+            transform 0.1s ease;
 }
 
-.errorBox {
-    margin-top: 18px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: var(--error-bg);
-    color: var(--error-text);
-    font-weight: 700;
-}
-
-.statusBox {
-    margin: 16px 0;
-    color: var(--text-soft);
-}
-
-.loadingText {
-    color: var(--text-soft);
-    text-align: center;
+.actionButton:hover {
+    background: var(--bg-dark-hover);
+    transform: translateY(-2px);
 }
 
 .linkButton {
@@ -262,6 +318,13 @@ hr {
 
 .activeToggle {
     background: var(--accent) !important;
+}
+
+/* --- Forms --- */
+.formStack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .inputGroup {
@@ -286,4 +349,40 @@ hr {
 .buttonDisabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* --- Misc --- */
+.centerText {
+    text-align: center;
+}
+
+.pageTitle {
+    margin: 0 0 22px 0;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-align: center;
+}
+
+.divider {
+    margin: 26px 0 10px 0;
+}
+
+.errorBox {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--error-bg);
+    color: var(--error-text);
+    font-weight: 700;
+}
+
+.statusBox {
+    margin: 16px 0;
+    color: var(--text-soft);
+}
+
+.loadingText {
+    color: var(--text-soft);
+    text-align: center;
 }

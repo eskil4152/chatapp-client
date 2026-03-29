@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import ChangePasswordAPI from "@/src/api/user/ChangePasswordAPI";
+import changePassword from "@/src/features/user/api/changePassword";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function ChangePasswordPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await ChangePasswordAPI(old, password);
+    const data = await changePassword(old, password);
 
     if (data.ok) {
       router.push("/user");

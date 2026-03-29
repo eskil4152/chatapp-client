@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import ChatClient from "./ChatClient";
+import ChatClient from "@/src/features/chat/components/ChatClient";
 
 export default function ChatPage() {
   return (

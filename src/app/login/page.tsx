@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import LogInAPI from "@/src/api/auth/LoginAPI";
+import login from "@/src/features/auth/api/login";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +16,7 @@ export default function Page() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await LogInAPI(username, password);
+    const data = await login(username, password);
 
     if (data.status === 200) {
       router.replace("/rooms");

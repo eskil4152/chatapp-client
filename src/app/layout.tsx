@@ -1,7 +1,7 @@
 import "../style/globals.css";
 import Link from "next/link";
 import React from "react";
-import { AppSocketProvider } from "@/src/providers/AppSocketProvider";
+import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
 
 export default function RootLayout({
   children,

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import MakeRoomAPI from "@/src/api/rooms/MakeRoomAPI";
+import makeRoom from "@/src/features/rooms/api/makeRoom";
 
 export default function AddRoom() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function AddRoom() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await MakeRoomAPI(roomName, encryption);
+    const data = await makeRoom(roomName, encryption);
 
     if (data.status === 201) {
       router.replace("/rooms");

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import register from "@/src/features/auth/api/register";
 
 export default function Page() {
@@ -77,6 +78,12 @@ export default function Page() {
             {passwordVisible ? "Hide Password" : "Show Password"}
           </button>
         </form>
+
+        <hr className="divider" />
+
+        <Link className="linkButton" href="/login">
+          Back to Login
+        </Link>
 
         {error && <p className="errorBox">{error}</p>}
       </div>

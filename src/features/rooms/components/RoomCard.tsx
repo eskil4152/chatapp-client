@@ -1,4 +1,3 @@
-import styles from "@/src/style/modules/Rooms.module.css";
 import leaveRoom from "@/src/features/rooms/api/leaveRoom";
 import { useRouter } from "next/navigation";
 import { RoomType } from "@/src/features/rooms/types";
@@ -17,11 +16,11 @@ export default function RoomCard({
         className="interactiveCard"
         onClick={() => router.replace(`/chat?id=${roomId}`)}
       >
-        <div className={styles.roomCardLeft}>
+        <div className="cardPrimary">
           <div className="itemName">{roomName}</div>
         </div>
 
-        <div className={styles.roomCardRight}>
+        <div className="cardSecondary">
           <span className="itemMeta">
             {encrypted ? "Encrypted" : "Not encrypted"}
           </span>

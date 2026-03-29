@@ -47,20 +47,12 @@
     overflow: hidden;
 }
 
-.topActions {
+.actions {
     display: flex;
     justify-content: center;
     gap: 14px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
-.bottomActions {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-top: 20px;
+    margin-block: 20px;
 }
 
 .passwordLink {

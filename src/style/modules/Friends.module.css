@@ -1,20 +1,3 @@
-.friendCardRight {
-    flex: 1;
-}
-
-.friendCardLeft {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-}
-
-.friendsUsername {
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
 .avatarBox {
     position: relative;
     width: 48px;
@@ -55,8 +38,8 @@
 }
 
 .online {
-    background: #22c55e;
-    box-shadow: 0 0 4px #22c55e;
+    background: var(--status-online);
+    box-shadow: 0 0 4px var(--status-online);
 }
 
 .offline {

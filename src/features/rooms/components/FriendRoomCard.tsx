@@ -1,5 +1,4 @@
 import { useRouter } from "next/navigation";
-import styles from "@/src/style/modules/Rooms.module.css";
 import { RoomType } from "@/src/features/rooms/types";
 
 export default function FriendRoomCard(room: RoomType) {
@@ -11,7 +10,7 @@ export default function FriendRoomCard(room: RoomType) {
         className="interactiveCard"
         onClick={() => router.replace(`/chat?id=${room.roomId}`)}
       >
-        <div className={styles.roomCardLeft}>
+        <div className="cardPrimary">
           <div className="itemName">{room.roomName}</div>
         </div>
       </button>

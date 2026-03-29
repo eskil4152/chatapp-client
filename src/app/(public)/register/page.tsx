@@ -81,7 +81,7 @@ export default function Page() {
 
         <hr className="divider" />
 
-        <Link className="linkButton" href="/login">
+        <Link className="secondaryButton" href="/login">
           Back to Login
         </Link>
 

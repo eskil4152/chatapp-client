@@ -20,7 +20,7 @@ export default function FriendCard(friend: FriendType) {
           )
         }
       >
-        <div className={styles.friendCardLeft}>
+        <div className="cardSecondary">
           <div className={styles.avatarBox}>
             <Image
               src={friend.avatarUrl || img}
@@ -35,8 +35,8 @@ export default function FriendCard(friend: FriendType) {
             />
           </div>
         </div>
-        <div className={styles.friendCardRight}>
-          <div className={styles.friendsUsername}>{friend.username}</div>
+        <div className="cardPrimary">
+          <div className="itemName">{friend.username}</div>
         </div>
       </button>
 

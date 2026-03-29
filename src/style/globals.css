@@ -28,6 +28,8 @@
     --radius-pill: 999px;
 
     --status-dot-border: #466874;
+    --secondary-hover: #6b98a3;
+    --status-online: #22c55e;
 }
 
 /* --- Reset --- */
@@ -109,6 +111,9 @@ hr {
 
 .headerRight {
     justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .logo {
@@ -129,6 +134,19 @@ hr {
 
 .header a:hover {
     background: rgba(255,255,255,0.12);
+}
+
+.header .headerAvatar {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 50%;
+}
+
+.headerAvatar img {
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
 
 .main {
@@ -179,6 +197,18 @@ hr {
     transform: translateY(-3px);
     background: var(--bg-card-hover);
     box-shadow: var(--shadow-list-hover);
+}
+
+/* --- Card layout --- */
+.cardPrimary {
+    flex: 1;
+}
+
+.cardSecondary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
 }
 
 /* --- Lists --- */
@@ -255,7 +285,7 @@ hr {
 }
 
 .secondaryButton:hover {
-    background: #6b98a3;
+    background: var(--secondary-hover);
     transform: translateY(-2px);
 }
 
@@ -299,22 +329,6 @@ hr {
     transform: translateY(-2px);
 }
 
-.linkButton {
-    display: inline-block;
-    background: var(--bg-input);
-    color: white;
-    padding: 10px 22px;
-    border-radius: var(--radius-pill);
-    font-weight: 700;
-    transition:
-            transform 0.15s ease,
-            background 0.2s ease;
-}
-
-.linkButton:hover {
-    background: #6b98a3;
-    transform: translateY(-2px);
-}
 
 .activeToggle {
     background: var(--accent) !important;
@@ -334,7 +348,7 @@ hr {
 }
 
 .input {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-soft);
 }
 
 .inputError {

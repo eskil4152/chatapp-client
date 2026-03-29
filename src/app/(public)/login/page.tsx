@@ -60,7 +60,7 @@ export default function Page() {
 
         <hr className="divider" />
 
-        <Link className="linkButton" href="/register">
+        <Link className="secondaryButton" href="/register">
           Register
         </Link>
 

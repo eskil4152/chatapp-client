@@ -99,7 +99,7 @@ export default function UserInfo() {
   return (
     <div className={styles.container}>
       <div className="card">
-        <div className={styles.topActions}>
+        <div className={styles.actions}>
           <button
             onClick={() => setEditing(!editing)}
             className="secondaryButton"
@@ -191,7 +191,7 @@ export default function UserInfo() {
           )}
         </form>
 
-        <div className={styles.bottomActions}>
+        <div className={styles.actions}>
           <Link
             href="/user/password"
             className={`secondaryButton ${styles.passwordLink}`}

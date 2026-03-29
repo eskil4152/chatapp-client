@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
+import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
 
 export default function ProtectedLayout({
   children,
@@ -17,12 +18,12 @@ export default function ProtectedLayout({
         </div>
 
         <nav className="headerCenter">
-          <Link href="/rooms">My rooms</Link>
+          <Link href="/rooms">Rooms</Link>
         </nav>
 
         <div className="headerRight">
-          <Link href="/friends">My friends</Link>
-          <Link href="/user">My info</Link>
+          <Link href="/friends">Friends</Link>
+          <HeaderAvatar />
         </div>
       </header>
 

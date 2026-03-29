@@ -86,7 +86,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
+      <div className={`card ${styles.card}`}>
         <ChatHeader roomName={roomName} encrypted={encrypted} />
         <hr />
 

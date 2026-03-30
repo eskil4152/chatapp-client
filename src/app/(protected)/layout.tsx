@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
 import { FriendPresenceProvider } from "@/src/shared/providers/FriendPresenceProvider";
 import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
-import ConnectionIndicator from "@/src/features/connectionIndicator";
+import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
 
 export default function ProtectedLayout({
   children,

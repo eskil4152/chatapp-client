@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import styles from "@/src/style/modules/User.module.css";
 import Link from "next/link";
 import logout from "@/src/features/auth/api/logout";
+import deleteUser from "@/src/features/user/api/deleteUser";
+import ConfirmPopup from "@/src/shared/components/ConfirmPopup";
 
 type UserData = {
   username: string;
@@ -65,6 +67,7 @@ function UserInfoForm({ data }: { data: UserData }) {
 
   const [editing, setEditing] = useState(false);
   const [errorBox, setErrorBox] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -87,6 +90,16 @@ function UserInfoForm({ data }: { data: UserData }) {
 
   return (
     <div className={styles.container}>
+      {confirmDelete && (
+        <ConfirmPopup
+          message="Are you sure you want to delete your account? This cannot be undone."
+          confirmLabel="Yes, delete"
+          onConfirm={async () => {
+            await deleteUser().then(() => router.push("/login"));
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
       <div className="card">
         <div className={styles.actions}>
           <button
@@ -198,6 +211,18 @@ function UserInfoForm({ data }: { data: UserData }) {
             }}
           >
             Log out
+          </button>
+        </div>
+
+        <hr className="divider" />
+
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className="dangerButton"
+            onClick={() => setConfirmDelete(true)}
+          >
+            Delete User
           </button>
         </div>
 

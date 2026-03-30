@@ -4,14 +4,6 @@
     padding: 0 20px;
 }
 
-.card {
-    background: #344955;
-    padding: 30px;
-    border-radius: 14px;
-    color: white;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-}
-
 .field {
     margin-bottom: 15px;
 }
@@ -23,15 +15,15 @@
 }
 
 .valueBox {
-    background: #50727B;
+    background: var(--bg-main);
     padding: 12px 14px;
-    border-radius: 10px;
-    color: white;
+    border-radius: var(--radius-input);
+    color: var(--text-main);
     min-height: 20px;
 }
 
 .input {
-    background: #5F8691;
+    background: var(--bg-input);
 }
 
 .bioBox {
@@ -39,36 +31,28 @@
     min-height: 120px;
     max-height: 180px;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-input);
     border: none;
     resize: none;
     overflow-y: auto;
     font-family: inherit;
     font-size: 0.95rem;
-    background: #5F8691;
-    color: white;
+    background: var(--bg-input);
+    color: var(--text-main);
 }
 
 .imageBox {
     margin-top: 8px;
-    border-radius: 10px;
+    border-radius: var(--radius-input);
     overflow: hidden;
 }
 
-.topActions {
+.actions {
     display: flex;
     justify-content: center;
     gap: 14px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
-.bottomActions {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-top: 20px;
+    margin-block: 20px;
 }
 
 .passwordLink {
@@ -77,5 +61,5 @@
 
 .profileImage {
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: var(--radius-input);
 }

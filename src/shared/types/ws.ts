@@ -1,10 +1,3 @@
-export type WsJoined = {
-  type: "JOINED";
-  roomId: string;
-  roomName: string;
-  encrypted: boolean;
-};
-
 export type WsError = {
   type: "ERROR";
   code: number;
@@ -18,12 +11,25 @@ export type WsChat = {
   timestamp: string;
 };
 
+export type RoomUser = {
+  id: string;
+  username: string;
+  avatar: string | null;
+  online: boolean;
+};
+
+export type WsRoomJoined = {
+  type: "ROOM_JOINED";
+  roomId: string;
+  roomName: string;
+  encrypted: boolean;
+  members: RoomUser[];
+};
+
 export type WsRoomPresence = {
   type: "ROOM_PRESENCE";
   roomId: string;
   userId: string;
-  username: string;
-  avatarUrl: string | null;
   online: boolean;
 };
 
@@ -33,14 +39,12 @@ export type WsFriendPresence = {
   online: boolean;
 };
 
-export type RoomUser = {
-  id: string;
-  username: string;
-  avatar: string | null;
-  online: boolean;
-};
-
-export type WsInbound = WsJoined | WsError | WsChat | WsRoomPresence | WsFriendPresence;
+export type WsInbound =
+  | WsError
+  | WsChat
+  | WsRoomJoined
+  | WsRoomPresence
+  | WsFriendPresence;
 
 export type HistoryMessage = {
   id: string;

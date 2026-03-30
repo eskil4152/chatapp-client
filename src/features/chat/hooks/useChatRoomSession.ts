@@ -73,12 +73,13 @@ export default function useChatRoomSession({
         return;
       }
 
-      if (data.type === "JOINED") {
+      if (data.type === "ROOM_JOINED") {
         if (data.roomId !== roomId) return;
 
         setJoined(true);
         setRoomName(data.roomName);
         setEncrypted(Boolean(data.encrypted));
+        setOnlineUsers(data.members ?? []);
 
         try {
           await onJoinedAction();
@@ -90,15 +91,11 @@ export default function useChatRoomSession({
 
       if (data.type === "ROOM_PRESENCE") {
         if (data.roomId !== roomId) return;
-
-        setOnlineUsers((prev) => {
-          if (data.online) {
-            const exists = prev.some((u) => u.id === data.userId);
-            if (exists) return prev.map((u) => u.id === data.userId ? { ...u, online: true } : u);
-            return [...prev, { id: data.userId, username: data.username, avatar: data.avatarUrl, online: true }];
-          }
-          return prev.filter((u) => u.id !== data.userId);
-        });
+        setOnlineUsers((prev) =>
+          prev.map((u) =>
+            u.id === data.userId ? { ...u, online: data.online } : u,
+          ),
+        );
         return;
       }
 

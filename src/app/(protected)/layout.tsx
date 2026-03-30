@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
+import { FriendPresenceProvider } from "@/src/shared/providers/FriendPresenceProvider";
 import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
 
 export default function ProtectedLayout({
@@ -10,24 +11,26 @@ export default function ProtectedLayout({
 }) {
   return (
     <AppSocketProvider>
-      <header className="header">
-        <div className="headerLeft">
-          <Link href="/" className="logo">
-            ChatApp
-          </Link>
-        </div>
+      <FriendPresenceProvider>
+        <header className="header">
+          <div className="headerLeft">
+            <Link href="/" className="logo">
+              ChatApp
+            </Link>
+          </div>
 
-        <nav className="headerCenter">
-          <Link href="/rooms">Rooms</Link>
-        </nav>
+          <nav className="headerCenter">
+            <Link href="/rooms">Rooms</Link>
+          </nav>
 
-        <div className="headerRight">
-          <Link href="/friends">Friends</Link>
-          <HeaderAvatar />
-        </div>
-      </header>
+          <div className="headerRight">
+            <Link href="/friends">Friends</Link>
+            <HeaderAvatar />
+          </div>
+        </header>
 
-      <main className="main">{children}</main>
+        <main className="main">{children}</main>
+      </FriendPresenceProvider>
     </AppSocketProvider>
   );
 }

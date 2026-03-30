@@ -1,41 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import useFriends from "@/src/features/friends/hooks/useFriends";
 import FriendCard from "@/src/features/friends/components/FriendCard";
-import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import { useFriendPresence } from "@/src/shared/providers/FriendPresenceProvider";
 import { FriendType } from "@/src/features/friends/types";
 
 export default function Friends() {
   const router = useRouter();
-  const { subscribe } = useAppSocket();
-
+  const { isOnline } = useFriendPresence();
   const { loading, error, response } = useFriends();
-  const [friends, setFriends] = useState<FriendType[]>([]);
+
+  const friends = response?.status === 200 ? (response.data as FriendType[]) : [];
 
   useEffect(() => {
     if (response?.status === 401) {
       router.replace("/login");
     }
   }, [response, router]);
-
-  useEffect(() => {
-    if (response?.status === 200) {
-      setFriends((response.data as FriendType[]) ?? []);
-    }
-  }, [response]);
-
-  useEffect(() => {
-    const unsubscribe = subscribe((data) => {
-      if (data.type !== "FRIEND_PRESENCE") return;
-      setFriends((prev) =>
-        prev.map((f) => f.userId === data.userId ? { ...f, online: data.online } : f)
-      );
-    });
-    return unsubscribe;
-  }, [subscribe]);
 
   return (
     <div className="pageList">
@@ -48,7 +32,7 @@ export default function Friends() {
       {friends.length > 0 && (
         <div className="itemList">
           {friends.map((friend) => (
-            <FriendCard key={friend.username} {...friend} />
+            <FriendCard key={friend.username} {...friend} online={isOnline(friend.userId)} />
           ))}
         </div>
       )}

@@ -129,11 +129,15 @@ function ChatClientInner({ roomId }: { roomId: string }) {
       </div>
 
       <div className={styles.sidebar}>
-        <p className={styles.sidebarTitle}>Online — {onlineUsers.length}</p>
+        <p className={styles.sidebarTitle}>
+          Members — {onlineUsers.filter((u) => u.online).length} online
+        </p>
         <ul className={styles.onlineList}>
           {onlineUsers.map((user) => (
             <li key={user.id} className={styles.onlineUser}>
-              <span className={styles.onlineDot} />
+              <span
+                className={`${styles.onlineDot} ${user.online ? "" : styles.offlineDot}`}
+              />
               {user.username}
             </li>
           ))}

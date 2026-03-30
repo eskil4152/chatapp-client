@@ -1,7 +1,7 @@
 "use client";
 
 import useUser from "@/src/features/user/hooks/useUser";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import editProfile from "@/src/features/user/api/editProfile";
 import { useRouter } from "next/navigation";
@@ -9,51 +9,21 @@ import styles from "@/src/style/modules/User.module.css";
 import Link from "next/link";
 import logout from "@/src/features/auth/api/logout";
 
+type UserData = {
+  username: string;
+  bio?: string;
+  email?: string;
+  fullName?: string;
+  avatarUrl?: string;
+};
+
+function validAvatar(link: string) {
+  return link.startsWith("http://") || link.startsWith("https://");
+}
+
 export default function UserInfo() {
   const router = useRouter();
-
-  function validAvatar(link: string) {
-    return link.startsWith("http://") || link.startsWith("https://");
-  }
-
   const { loading, error, response } = useUser();
-  const [username, setUsername] = useState("");
-
-  const [form, setForm] = useState({
-    bio: "",
-    email: "",
-    fullName: "",
-    avatarUrl: "",
-  });
-
-  const [editing, setEditing] = useState(false);
-  const [errorBox, setErrorBox] = useState("");
-
-  useEffect(() => {
-    if (response?.status === 200) {
-      const { username, bio, email, fullName, avatarUrl } = response.data as {
-        username: string;
-        bio?: string;
-        email?: string;
-        fullName?: string;
-        avatarUrl?: string;
-      };
-      setUsername(username);
-
-      setForm({
-        bio: bio || "",
-        email: email || "",
-        fullName: fullName || "",
-        avatarUrl: avatarUrl || "",
-      });
-    }
-  }, [response]);
-
-  useEffect(() => {
-    if (response?.status === 401) {
-      router.replace("/login");
-    }
-  }, [response, router]);
 
   if (loading) {
     return (
@@ -65,7 +35,10 @@ export default function UserInfo() {
     );
   }
 
-  if (response?.status === 401) return null;
+  if (response?.status === 401) {
+    router.replace("/login");
+    return null;
+  }
 
   if (error || response?.status !== 200) {
     return (
@@ -76,6 +49,22 @@ export default function UserInfo() {
       </div>
     );
   }
+
+  return <UserInfoForm data={response.data as UserData} />;
+}
+
+function UserInfoForm({ data }: { data: UserData }) {
+  const router = useRouter();
+
+  const [form, setForm] = useState({
+    bio: data.bio || "",
+    email: data.email || "",
+    fullName: data.fullName || "",
+    avatarUrl: data.avatarUrl || "",
+  });
+
+  const [editing, setEditing] = useState(false);
+  const [errorBox, setErrorBox] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -111,7 +100,7 @@ export default function UserInfo() {
 
         <div className={styles.field}>
           <label className={styles.label}>Username</label>
-          <div className={styles.valueBox}>{username}</div>
+          <div className={styles.valueBox}>{data.username}</div>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -160,7 +149,9 @@ export default function UserInfo() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Avatar URL</label>
+            <label className={styles.label}>
+              {editing ? "Avatar URL" : "Avatar"}
+            </label>
             {editing ? (
               <input
                 type="text"

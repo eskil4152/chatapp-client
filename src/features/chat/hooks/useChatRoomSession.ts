@@ -23,7 +23,7 @@ export default function useChatRoomSession({
   const [error, setError] = useState("");
   const [rateLimited, setRateLimited] = useState(false);
   const [joined, setJoined] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<RoomUser[]>([]);
+  const [members, setOnlineUsers] = useState<RoomUser[]>([]);
 
   const rateLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,6 +120,6 @@ export default function useChatRoomSession({
     encrypted,
     error,
     rateLimited,
-    onlineUsers,
+    members,
   };
 }

@@ -32,7 +32,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
 
-  const { joined, roomName, encrypted, error, rateLimited, onlineUsers } =
+  const { joined, roomName, encrypted, error, rateLimited, members } =
     useChatRoomSession({
       roomId,
       connected,
@@ -130,10 +130,11 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
       <div className={styles.sidebar}>
         <p className={styles.sidebarTitle}>
-          Members — {onlineUsers.filter((u) => u.online).length} online
+          Members — {members.filter((u) => u.online).length} / {members.length}{" "}
+          online
         </p>
         <ul className={styles.onlineList}>
-          {onlineUsers.map((user) => (
+          {members.map((user) => (
             <li key={user.id} className={styles.onlineUser}>
               <span
                 className={`${styles.onlineDot} ${user.online ? "" : styles.offlineDot}`}

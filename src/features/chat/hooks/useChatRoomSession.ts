@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RoomUser, WsChat, WsInbound } from "@/src/shared/types/ws";
 
 type UseChatRoomSessionProps = {
@@ -18,12 +19,14 @@ export default function useChatRoomSession({
   loadMessages,
   setMessages,
 }: UseChatRoomSessionProps) {
+  const router = useRouter();
   const [roomName, setRoomName] = useState("");
   const [encrypted, setEncrypted] = useState(false);
+  const [role, setRole] = useState("");
   const [error, setError] = useState("");
   const [rateLimited, setRateLimited] = useState(false);
   const [joined, setJoined] = useState(false);
-  const [members, setOnlineUsers] = useState<RoomUser[]>([]);
+  const [members, setMembers] = useState<RoomUser[]>([]);
 
   const rateLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,7 +82,8 @@ export default function useChatRoomSession({
         setJoined(true);
         setRoomName(data.roomName);
         setEncrypted(Boolean(data.encrypted));
-        setOnlineUsers(data.members ?? []);
+        setRole(data.role ?? "");
+        setMembers(data.members ?? []);
 
         try {
           await onJoinedAction();
@@ -89,9 +93,15 @@ export default function useChatRoomSession({
         return;
       }
 
+      if (data.type === "ROOM_ACTION") {
+        if (data.roomId !== roomId) return;
+        router.replace("/rooms");
+        return;
+      }
+
       if (data.type === "ROOM_PRESENCE") {
         if (data.roomId !== roomId) return;
-        setOnlineUsers((prev) =>
+        setMembers((prev) =>
           prev.map((u) =>
             u.id === data.userId ? { ...u, online: data.online } : u,
           ),
@@ -118,6 +128,7 @@ export default function useChatRoomSession({
     joined,
     roomName,
     encrypted,
+    role,
     error,
     rateLimited,
     members,

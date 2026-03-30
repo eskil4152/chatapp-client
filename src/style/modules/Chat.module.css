@@ -47,9 +47,36 @@
     gap: 8px;
     font-size: 0.9rem;
     color: var(--text-main);
+}
+
+.memberName {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.memberActions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 4px;
+}
+
+.memberActionBtn {
+    border: none;
+    border-radius: 6px;
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.memberActionBtn:hover {
+    background: var(--bg-dark-hover);
 }
 
 .onlineDot {

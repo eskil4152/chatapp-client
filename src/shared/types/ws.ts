@@ -23,7 +23,15 @@ export type WsRoomJoined = {
   roomId: string;
   roomName: string;
   encrypted: boolean;
+  role: string;
   members: RoomUser[];
+};
+
+export type WsRoomAction = {
+  type: "ROOM_ACTION";
+  roomId: string;
+  action: "KICK" | "BAN";
+  reason: string;
 };
 
 export type WsRoomPresence = {
@@ -44,6 +52,7 @@ export type WsInbound =
   | WsChat
   | WsRoomJoined
   | WsRoomPresence
+  | WsRoomAction
   | WsFriendPresence;
 
 export type HistoryMessage = {

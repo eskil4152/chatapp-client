@@ -18,6 +18,8 @@ export default function JoinRoom() {
       router.replace("/");
     } else if (data.status === 401) {
       router.replace("/login");
+    } else if (data.status === 403) {
+      setError("You are banned from this room.");
     } else if (data.status === 400) {
       setError("Invalid ID");
     } else if (data.status === 404) {

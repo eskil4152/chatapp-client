@@ -25,6 +25,8 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null);
   const listenersRef = useRef(new Set<(event: WsInbound) => void>());
   const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
   const wsUrl = process.env.NEXT_PUBLIC_WS_API_URL;
 
   const [connected, setConnected] = useState(false);
@@ -34,7 +36,6 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
 
   const subscribe = useCallback((listener: (event: WsInbound) => void) => {
     listenersRef.current.add(listener);
-
     return () => {
       listenersRef.current.delete(listener);
     };
@@ -48,82 +49,83 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!wsUrl) return;
-    const ws = new WebSocket(`${wsUrl}/ws`);
 
-    wsRef.current = ws;
+    let active = true;
 
-    const clearPing = () => {
-      if (pingTimerRef.current) {
-        clearInterval(pingTimerRef.current);
-        pingTimerRef.current = null;
-      }
-    };
+    function connect() {
+      const ws = new WebSocket(`${wsUrl}/ws`);
+      wsRef.current = ws;
 
-    ws.onopen = () => {
-      setConnected(true);
-      setError("");
-
-      pingTimerRef.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "PING" }));
+      const clearPing = () => {
+        if (pingTimerRef.current) {
+          clearInterval(pingTimerRef.current);
+          pingTimerRef.current = null;
         }
-      }, 25000);
-    };
+      };
 
-    ws.onmessage = (event) => {
-      let data: WsInbound | null = null;
+      ws.onopen = () => {
+        reconnectAttemptRef.current = 0;
+        setConnected(true);
+        setError("");
 
-      try {
-        data = JSON.parse(event.data) as WsInbound;
-      } catch {
-        return;
-      }
+        pingTimerRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "PING" }));
+          }
+        }, 25000);
+      };
 
-      if (!data || typeof data !== "object" || !("type" in data)) return;
-
-      if (data.type === "ERROR") {
-        if (data.code === 401) {
-          router.replace("/login");
-        } else if (data.code === 403) {
-          router.replace("/rooms");
+      ws.onmessage = (event) => {
+        let data: WsInbound | null = null;
+        try {
+          data = JSON.parse(event.data) as WsInbound;
+        } catch {
+          return;
         }
-      }
+        if (!data || typeof data !== "object" || !("type" in data)) return;
+        if (data.type === "ERROR") {
+          if (data.code === 401) router.replace("/login");
+          else if (data.code === 403) router.replace("/rooms");
+        }
+        listenersRef.current.forEach((listener) => listener(data));
+      };
 
-      listenersRef.current.forEach((listener) => listener(data));
-    };
+      ws.onerror = () => {
+        setConnected(false);
+        setError("WebSocket error");
+      };
 
-    ws.onerror = () => {
-      setConnected(false);
-      setError("WebSocket error");
-    };
+      ws.onclose = () => {
+        setConnected(false);
+        clearPing();
+        wsRef.current = null;
+        if (!active) return;
 
-    ws.onclose = () => {
-      setConnected(false);
-      clearPing();
-      wsRef.current = null;
-    };
+        const delay = Math.min(2000 * 2 ** reconnectAttemptRef.current, 30000);
+        reconnectAttemptRef.current += 1;
+        setError(`Reconnecting... Attempt ${reconnectAttemptRef.current}`);
+        reconnectTimerRef.current = setTimeout(connect, delay);
+      };
+    }
+
+    connect();
 
     return () => {
-      clearPing();
-
-      if (ws.readyState === WebSocket.OPEN) {
+      active = false;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (pingTimerRef.current) clearInterval(pingTimerRef.current);
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
         try {
-          ws.close();
+          wsRef.current.close();
         } catch {}
       }
-
       wsRef.current = null;
     };
   }, [router, wsUrl]);
 
   return (
     <AppSocketContext.Provider
-      value={{
-        connected,
-        error,
-        sendJson,
-        subscribe,
-      }}
+      value={{ connected, error, sendJson, subscribe }}
     >
       {children}
     </AppSocketContext.Provider>
@@ -132,10 +134,7 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
 
 export function useAppSocket() {
   const ctx = useContext(AppSocketContext);
-
-  if (!ctx) {
+  if (!ctx)
     throw new Error("useAppSocket must be used within AppSocketProvider");
-  }
-
   return ctx;
 }

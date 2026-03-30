@@ -1,8 +1,8 @@
 import Link from "next/link";
-import React from "react";
 import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
 import { FriendPresenceProvider } from "@/src/shared/providers/FriendPresenceProvider";
 import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
+import ConnectionIndicator from "@/src/features/connectionIndicator";
 
 export default function ProtectedLayout({
   children,
@@ -29,6 +29,7 @@ export default function ProtectedLayout({
           </div>
         </header>
 
+        <ConnectionIndicator />
         <main className="main">{children}</main>
       </FriendPresenceProvider>
     </AppSocketProvider>

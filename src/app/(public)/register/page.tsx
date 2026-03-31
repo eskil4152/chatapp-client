@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import register from "@/src/features/auth/api/register";
+import PasswordStrength from "@/src/shared/components/PasswordStrength";
 
 export default function Page() {
   const router = useRouter();
@@ -56,6 +57,8 @@ export default function Page() {
                 password.length > 0 && password.length < 8 ? "inputError" : ""
               }`}
             />
+
+            <PasswordStrength password={password} />
 
             {password.length > 0 && password.length < 8 && (
               <div className="inputHint">Minimum 8 characters</div>

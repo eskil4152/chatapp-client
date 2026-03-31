@@ -3,6 +3,8 @@ import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
 import { FriendPresenceProvider } from "@/src/shared/providers/FriendPresenceProvider";
 import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
 import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
+import OnlineFriendsRail from "@/src/features/friends/components/OnlineFriendsRail";
+import React from "react";
 
 export default function ProtectedLayout({
   children,
@@ -30,7 +32,14 @@ export default function ProtectedLayout({
         </header>
 
         <ConnectionIndicator />
-        <main className="main">{children}</main>
+
+        <div className="appShell">
+          <aside className="onlineRail">
+            <OnlineFriendsRail />
+          </aside>
+
+          <main className="main">{children}</main>
+        </div>
       </FriendPresenceProvider>
     </AppSocketProvider>
   );

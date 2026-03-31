@@ -44,7 +44,21 @@ export type WsRoomPresence = {
 export type WsFriendPresence = {
   type: "FRIEND_PRESENCE";
   userId: string;
+  username: string;
+  avatarUrl: string | null;
   online: boolean;
+};
+
+export type OnlineFriend = {
+  userId: string;
+  username: string;
+  avatarUrl: string | null;
+  online: boolean;
+};
+
+export type WsFriendSnapshot = {
+  type: "FRIEND_SNAPSHOT";
+  friends: OnlineFriend[];
 };
 
 export type WsInbound =
@@ -53,6 +67,7 @@ export type WsInbound =
   | WsRoomJoined
   | WsRoomPresence
   | WsRoomAction
+  | WsFriendSnapshot
   | WsFriendPresence;
 
 export type HistoryMessage = {

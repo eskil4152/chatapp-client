@@ -151,6 +151,8 @@ hr {
 
 .main {
     padding: 30px 20px;
+    flex: 1;
+    min-width: 0
 }
 
 /* --- Page shells --- */
@@ -399,4 +401,50 @@ hr {
 .loadingText {
     color: var(--text-soft);
     text-align: center;
+}
+
+.appShell {
+    display: flex;
+    min-height: calc(100vh - 64px);
+}
+
+.onlineRail {
+    width: 56px;
+    flex-shrink: 0;
+
+    background: var(--bg-dark);
+    border-right: 1px solid var(--border-soft);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 6px;
+
+    overflow-y: auto;
+}
+
+.onlineRail img {
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.onlineRail img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.onlineRail .onlineDot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background: var(--status-online);
+    border-radius: 50%;
+    border: 2px solid var(--status-dot-border);
 }

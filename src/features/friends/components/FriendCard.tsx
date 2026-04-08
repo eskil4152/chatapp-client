@@ -16,7 +16,7 @@ export default function FriendCard(friend: FriendType) {
         className="interactiveCard"
         onClick={() =>
           void router.replace(
-            `/friends/info?username=${encodeURIComponent(friend.username)}`,
+            `/friends/info?userId=${encodeURIComponent(friend.userId)}`,
           )
         }
       >
@@ -46,7 +46,7 @@ export default function FriendCard(friend: FriendType) {
         onClick={async (e) => {
           e.stopPropagation();
 
-          const res = await privateMessage(friend.username);
+          const res = await privateMessage(friend.userId);
 
           if (res.ok) {
             const roomId = (await res.text()).trim();

@@ -7,6 +7,7 @@ export type PendingInvite = {
   fromUsername: string;
   fromAvatarUrl: string | null;
   roomId: string | null;
+  roomName: string | null;
   expiresAt: string;
 };
 
@@ -26,6 +27,7 @@ export type OutgoingRoomInvite = {
   toUsername: string;
   avatar: string | null;
   roomId: string;
+  roomName: string | null;
   expiresAt: string;
 };
 

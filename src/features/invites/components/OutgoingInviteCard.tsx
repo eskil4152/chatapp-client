@@ -47,7 +47,11 @@ export default function OutgoingInviteCard({ invite }: { invite: OutgoingInvite 
         <div className={styles.inviteInfo}>
           <div className={styles.inviteUsername}>{invite.toUsername}</div>
           <div className={styles.inviteType}>
-            {invite.type === "FRIEND_REQUEST" ? "Friend request sent" : "Room invite sent"}
+            {invite.type === "FRIEND_REQUEST"
+              ? "Friend request sent"
+              : invite.roomName
+                ? `Room invite sent — ${invite.roomName}`
+                : "Room invite sent"}
           </div>
         </div>
       </div>

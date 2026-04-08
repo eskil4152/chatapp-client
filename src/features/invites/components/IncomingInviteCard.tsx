@@ -5,11 +5,11 @@ import styles from "@/src/style/modules/Invites.module.css";
 import { PendingInvite } from "@/src/features/invites/types";
 import defaultAvatar from "@/public/images/default_profile.png";
 
-const INVITE_LABEL: Record<PendingInvite["type"], string> = {
-  FRIEND_REQUEST: "Friend request",
-  ROOM_INVITE: "Room invite",
-  OPEN_ROOM_INVITE: "Room invite (open link)",
-};
+function inviteLabel(invite: PendingInvite): string {
+  if (invite.type === "FRIEND_REQUEST") return "Friend request";
+  if (invite.roomName) return `Room invite — ${invite.roomName}`;
+  return "Room invite";
+}
 
 type Props = {
   invite: PendingInvite;
@@ -40,7 +40,7 @@ export default function IncomingInviteCard({ invite, onAccept, onReject }: Props
         )}
         <div className={styles.inviteInfo}>
           <div className={styles.inviteUsername}>{invite.fromUsername}</div>
-          <div className={styles.inviteType}>{INVITE_LABEL[invite.type]}</div>
+          <div className={styles.inviteType}>{inviteLabel(invite)}</div>
         </div>
       </div>
 

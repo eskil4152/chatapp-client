@@ -3,6 +3,6 @@ export default async function sendFriendRequest(username: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ type: "FRIEND_REQUEST", username }),
   });
 }

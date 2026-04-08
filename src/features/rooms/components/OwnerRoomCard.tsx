@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { RoomType } from "@/src/features/rooms/types";
 
-export function OwnerRoomCard({ roomId, roomName, encrypted }: RoomType) {
+export function OwnerRoomCard({ roomId, roomName, encrypted, role }: RoomType) {
   const router = useRouter();
 
   return (
@@ -15,6 +15,7 @@ export function OwnerRoomCard({ roomId, roomName, encrypted }: RoomType) {
         </div>
 
         <div className="cardSecondary">
+          <span className="itemMeta">{role}</span>
           <span className="itemMeta">
             {encrypted ? "Encrypted" : "Not encrypted"}
           </span>
@@ -26,10 +27,10 @@ export function OwnerRoomCard({ roomId, roomName, encrypted }: RoomType) {
         className="actionButton"
         onClick={(e) => {
           e.stopPropagation();
-          router.push(`/rooms/edit?id=${roomId}`);
+          router.push(`/rooms/manage?id=${roomId}&role=${role}`);
         }}
       >
-        Edit room
+        Manage
       </button>
     </div>
   );

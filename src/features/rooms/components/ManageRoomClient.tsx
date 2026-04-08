@@ -282,6 +282,69 @@ export default function ManageRoomClient() {
         </>
       )}
 
+      {/* Invite user — MODERATOR+ */}
+      {isAtLeast("MODERATOR") && (
+        <>
+          <h2 className="sectionTitle">Invite user</h2>
+          <div className="card">
+            <form onSubmit={handleInviteUser} className="formStack">
+              <input
+                type="text"
+                placeholder="Username"
+                value={inviteUserId}
+                onChange={(e) => setInviteUserId(e.target.value)}
+              />
+              <button className="primaryButton" disabled={inviteUserId.trim().length === 0}>
+                Send invite
+              </button>
+            </form>
+            {inviteUserStatus && <p className="statusBox">{inviteUserStatus}</p>}
+          </div>
+        </>
+      )}
+
+      {/* Open invites — ADMIN+ */}
+      {isAtLeast("ADMIN") && (
+        <>
+          <h2 className="sectionTitle">Open invites</h2>
+          <div className="card">
+            <form onSubmit={handleGenerateInvite} className="formStack">
+              <input
+                type="number"
+                placeholder="Max uses"
+                min={1}
+                value={maxUsages}
+                onChange={(e) => setMaxUsages(e.target.value)}
+              />
+              <button className="primaryButton">Generate invite</button>
+            </form>
+
+            {inviteError && <p className="errorBox">{inviteError}</p>}
+
+            {generatedId && (
+              <p className="statusBox">
+                Invite created: <strong style={{ userSelect: "all" }}>{generatedId}</strong>
+              </p>
+            )}
+          </div>
+
+          {openInvites.length > 0 && (
+            <div className="itemList">
+              {openInvites.map((invite) => (
+                <div key={invite.id} className="card">
+                  <div className="itemMeta" style={{ userSelect: "all", wordBreak: "break-all" }}>
+                    {invite.id}
+                  </div>
+                  <div className="itemMeta">
+                    {invite.usages} / {invite.maxUsages} uses
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
       {/* Members — MODERATOR+ */}
       {isAtLeast("MODERATOR") && (
         <>
@@ -360,69 +423,6 @@ export default function ManageRoomClient() {
               </div>
             ))}
           </div>
-        </>
-      )}
-
-      {/* Invite user — MODERATOR+ */}
-      {isAtLeast("MODERATOR") && (
-        <>
-          <h2 className="sectionTitle">Invite user</h2>
-          <div className="card">
-            <form onSubmit={handleInviteUser} className="formStack">
-              <input
-                type="text"
-                placeholder="Username"
-                value={inviteUserId}
-                onChange={(e) => setInviteUserId(e.target.value)}
-              />
-              <button className="primaryButton" disabled={inviteUserId.trim().length === 0}>
-                Send invite
-              </button>
-            </form>
-            {inviteUserStatus && <p className="statusBox">{inviteUserStatus}</p>}
-          </div>
-        </>
-      )}
-
-      {/* Open invites — ADMIN+ */}
-      {isAtLeast("ADMIN") && (
-        <>
-          <h2 className="sectionTitle">Open invites</h2>
-          <div className="card">
-            <form onSubmit={handleGenerateInvite} className="formStack">
-              <input
-                type="number"
-                placeholder="Max uses"
-                min={1}
-                value={maxUsages}
-                onChange={(e) => setMaxUsages(e.target.value)}
-              />
-              <button className="primaryButton">Generate invite</button>
-            </form>
-
-            {inviteError && <p className="errorBox">{inviteError}</p>}
-
-            {generatedId && (
-              <p className="statusBox">
-                Invite created: <strong style={{ userSelect: "all" }}>{generatedId}</strong>
-              </p>
-            )}
-          </div>
-
-          {openInvites.length > 0 && (
-            <div className="itemList">
-              {openInvites.map((invite) => (
-                <div key={invite.id} className="card">
-                  <div className="itemMeta" style={{ userSelect: "all", wordBreak: "break-all" }}>
-                    {invite.id}
-                  </div>
-                  <div className="itemMeta">
-                    {invite.usages} / {invite.maxUsages} uses
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </>
       )}
 

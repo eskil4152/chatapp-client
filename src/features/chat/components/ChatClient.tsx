@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import roomAction from "@/src/features/rooms/api/roomAction";
 import { useSearchParams } from "next/navigation";
 import styles from "@/src/style/modules/Chat.module.css";
 import useChatHistory from "@/src/features/chat/hooks/useChatHistory";
@@ -142,34 +140,9 @@ function ChatClientInner({ roomId }: { roomId: string }) {
                 className={`${styles.onlineDot} ${user.online ? "" : styles.offlineDot}`}
               />
               <span className={styles.memberName}>{user.username}</span>
-              {role === "OWNER" && (
-                <span className={styles.memberActions}>
-                  <button
-                    className={styles.memberActionBtn}
-                    onClick={() => void roomAction(roomId, user.id, "KICK")}
-                  >
-                    Kick
-                  </button>
-                  <button
-                    className={styles.memberActionBtn}
-                    onClick={() => void roomAction(roomId, user.id, "BAN")}
-                  >
-                    Ban
-                  </button>
-                </span>
-              )}
             </li>
           ))}
         </ul>
-        {role === "OWNER" && (
-          <Link
-            href={`/rooms/bans?id=${encodeURIComponent(roomId)}`}
-            className="secondaryButton"
-            style={{ marginTop: 12, display: "block", textAlign: "center" }}
-          >
-            Ban list
-          </Link>
-        )}
       </div>
     </div>
   );

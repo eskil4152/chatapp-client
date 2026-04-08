@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import addFriend from "@/src/features/friends/api/addFriend";
+import sendFriendRequest from "@/src/features/invites/api/sendFriendRequest";
 
 export default function Page() {
   const router = useRouter();
@@ -13,14 +13,14 @@ export default function Page() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await addFriend(username);
+    const data = await sendFriendRequest(username);
 
     if (data.status === 200) {
       router.replace("/friends");
     } else if (data.status === 404) {
       setError("User not found.");
     } else if (data.status === 409) {
-      setError("You are already friends with this user.");
+      setError("Already friends or request already sent.");
     } else {
       setError("An error occurred");
     }
@@ -39,7 +39,7 @@ export default function Page() {
             onChange={(e) => setUsername(e.target.value)}
           />
 
-          <button className="primaryButton">Add</button>
+          <button className="primaryButton">Send request</button>
         </form>
 
         {error && <p className="errorBox">{error}</p>}

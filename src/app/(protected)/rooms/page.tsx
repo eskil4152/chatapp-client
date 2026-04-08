@@ -27,11 +27,15 @@ export default function Rooms() {
     }
   }, [response]);
 
-  const joinedRooms = rooms.filter(
-    (room) => room.type !== "PRIVATE" && room.role !== "OWNER",
+  const manageableRoles = ["OWNER", "ADMIN", "MODERATOR"];
+
+  const manageableRooms = rooms.filter(
+    (room) => room.type !== "PRIVATE" && manageableRoles.includes(room.role),
   );
 
-  const ownedRooms = rooms.filter((room) => room.role === "OWNER");
+  const joinedRooms = rooms.filter(
+    (room) => room.type !== "PRIVATE" && !manageableRoles.includes(room.role),
+  );
 
   const privateRooms = rooms.filter((room) => room.type === "PRIVATE");
 
@@ -41,11 +45,11 @@ export default function Rooms() {
       {!loading && !!error && <p className="errorBox">Failed to load rooms</p>}
       {!loading && !error && rooms.length === 0 && <p className="empty">No rooms :(</p>}
 
-      {ownedRooms.length > 0 && (
+      {manageableRooms.length > 0 && (
         <>
-          <h2 className="sectionTitle">Owned Rooms</h2>
+          <h2 className="sectionTitle">Managed Rooms</h2>
           <div className="itemList">
-            {ownedRooms.map((room) => (
+            {manageableRooms.map((room) => (
               <OwnerRoomCard
                 key={room.roomId}
                 roomId={room.roomId}

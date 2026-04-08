@@ -15,7 +15,7 @@ export default function OnlineFriendsRail() {
       {onlineFriends.map((friend) => (
         <Link
           key={friend.userId}
-          href={`/friends/info?username=${friend.username}`}
+          href={`/friends/info?userId=${friend.userId}`}
           title={friend.username ?? ""}
         >
           <Image

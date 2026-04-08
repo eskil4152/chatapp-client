@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import getFriendInfo from "@/src/features/friends/api/getFriendInfo";
+import removeFriend from "@/src/features/friends/api/removeFriend";
+import ConfirmPopup from "@/src/shared/components/ConfirmPopup";
 import Image from "next/image";
 import styles from "@/src/style/modules/Friends.module.css";
 import img from "@/public/images/default_profile.png";
@@ -21,19 +23,20 @@ type Friend = {
 export default function FriendInfoClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const username = searchParams.get("username");
+  const userId = searchParams.get("userId");
 
   const [friend, setFriend] = useState<Friend | null>(null);
   const [error, setError] = useState("");
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   useEffect(() => {
     async function load() {
-      if (!username) {
-        setError("Missing username");
+      if (!userId) {
+        setError("Missing userId");
         return;
       }
 
-      const res = await getFriendInfo(username);
+      const res = await getFriendInfo(userId);
 
       if (res.status === 200) {
         const data = await res.json();
@@ -48,13 +51,29 @@ export default function FriendInfoClient() {
     }
 
     load();
-  }, [username, router]);
+  }, [userId, router]);
 
   if (error) return <p>{error}</p>;
   if (!friend) return <p>Loading...</p>;
 
   return (
     <div>
+      {confirmRemove && (
+        <ConfirmPopup
+          message={`Remove ${friend.username} from friends? This cannot be undone.`}
+          confirmLabel="Yes, remove"
+          onConfirm={async () => {
+            const res = await removeFriend(userId!);
+            if (res.ok) {
+              router.replace("/friends");
+            } else if (res.status === 401) {
+              router.replace("/login");
+            }
+          }}
+          onCancel={() => setConfirmRemove(false)}
+        />
+      )}
+
       <div className={styles.avatarBox}>
         <Image
           src={friend.avatarUrl || img}
@@ -69,6 +88,14 @@ export default function FriendInfoClient() {
       {friend.email && <p>{friend.email}</p>}
       {friend.birthday && <p>{friend.birthday}</p>}
       Member since: {friend.createdAt && <p>{friend.createdAt}</p>}
+
+      <button
+        type="button"
+        className="dangerButton"
+        onClick={() => setConfirmRemove(true)}
+      >
+        Remove friend
+      </button>
     </div>
   );
 }

@@ -2,28 +2,32 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import joinRoom from "@/src/features/rooms/api/joinRoom";
+import respondToInvite from "@/src/features/invites/api/respondToInvite";
 
 export default function JoinRoom() {
   const router = useRouter();
-  const [roomId, setRoomId] = useState("");
+  const [inviteId, setInviteId] = useState("");
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const data = await joinRoom(roomId);
+    const data = await respondToInvite(inviteId.trim(), "ACCEPTED");
 
     if (data.status === 200) {
-      router.replace("/");
+      router.replace("/rooms");
     } else if (data.status === 401) {
       router.replace("/login");
     } else if (data.status === 403) {
       setError("You are banned from this room.");
-    } else if (data.status === 400) {
-      setError("Invalid ID");
+    } else if (data.status === 409) {
+      setError("You are already in this room.");
     } else if (data.status === 404) {
-      setError("Room Not Found");
+      setError("Invite not found or expired.");
+    } else if (data.status === 400) {
+      setError("Invalid invite ID.");
+    } else {
+      setError("An error occurred.");
     }
   }
 
@@ -35,9 +39,9 @@ export default function JoinRoom() {
         <form onSubmit={handleSubmit} className="formStack">
           <input
             type="text"
-            placeholder="Room ID"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
+            placeholder="Invite ID"
+            value={inviteId}
+            onChange={(e) => setInviteId(e.target.value)}
           />
 
           <button className="primaryButton">Join</button>

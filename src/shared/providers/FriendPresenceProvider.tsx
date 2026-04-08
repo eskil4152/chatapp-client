@@ -46,13 +46,11 @@ export function FriendPresenceProvider({
         const next = new Map(prev);
         const existing = next.get(data.userId);
 
-        if (!existing) return next;
-
         next.set(data.userId, {
-          ...existing,
+          userId: data.userId,
+          username: data.username ?? existing?.username ?? "",
+          avatarUrl: data.avatarUrl ?? existing?.avatarUrl ?? null,
           online: data.online,
-          username: data.username ?? existing.username,
-          avatarUrl: data.avatarUrl ?? existing.avatarUrl,
         });
 
         return next;

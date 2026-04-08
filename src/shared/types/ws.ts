@@ -61,14 +61,40 @@ export type WsFriendSnapshot = {
   friends: OnlineFriend[];
 };
 
+export type WsRoomDeleted = {
+  type: "ROOM_DELETED";
+  roomId: string;
+  roomName: string;
+};
+
+export type WsInviteReceived = {
+  type: "INVITE_RECEIVED";
+  id: string;
+  inviteType: "FRIEND_REQUEST" | "ROOM_INVITE" | "OPEN_ROOM_INVITE";
+  fromUserId: string;
+  roomId: string | null;
+  expiresAt: string;
+};
+
+export type WsInviteAccepted = {
+  type: "INVITE_ACCEPTED";
+  inviteType: "FRIEND_REQUEST" | "ROOM_INVITE" | "OPEN_ROOM_INVITE";
+  roomId: string | null;
+  username: string;
+  avatarUrl: string | null;
+};
+
 export type WsInbound =
   | WsError
   | WsChat
   | WsRoomJoined
   | WsRoomPresence
   | WsRoomAction
+  | WsRoomDeleted
   | WsFriendSnapshot
-  | WsFriendPresence;
+  | WsFriendPresence
+  | WsInviteReceived
+  | WsInviteAccepted;
 
 export type HistoryMessage = {
   id: string;

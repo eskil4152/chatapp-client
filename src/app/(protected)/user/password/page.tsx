@@ -10,9 +10,12 @@ export default function ChangePasswordPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await changePassword(old, password);
 
@@ -24,6 +27,7 @@ export default function ChangePasswordPage() {
       const err = await data.json();
       setError(err.message);
     }
+    setLoading(false);
   }
 
   return (
@@ -57,10 +61,10 @@ export default function ChangePasswordPage() {
 
           <button
             type="submit"
-            disabled={password.length < 8}
-            className={`primaryButton ${password.length < 8 ? "buttonDisabled" : ""}`}
+            disabled={loading || password.length < 8}
+            className={`primaryButton ${loading ? "buttonLoading" : password.length < 8 ? "buttonDisabled" : ""}`}
           >
-            Submit
+            {loading ? "Saving…" : "Submit"}
           </button>
         </form>
 

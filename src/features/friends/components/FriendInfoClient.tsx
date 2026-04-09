@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import getFriendInfo from "@/src/features/friends/api/getFriendInfo";
 import removeFriend from "@/src/features/friends/api/removeFriend";
@@ -8,6 +8,7 @@ import ConfirmPopup from "@/src/shared/components/ConfirmPopup";
 import Image from "next/image";
 import styles from "@/src/style/modules/Friends.module.css";
 import img from "@/public/images/default_profile.png";
+import useLoading from "@/src/shared/hooks/useLoading";
 
 type Friend = {
   username: string;
@@ -25,36 +26,21 @@ export default function FriendInfoClient() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
-  const [friend, setFriend] = useState<Friend | null>(null);
-  const [error, setError] = useState("");
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      if (!userId) {
-        setError("Missing userId");
-        return;
-      }
+  const { loading, error, response } = useLoading(async () => {
+    if (!userId) return null;
+    const res = await getFriendInfo(userId);
+    if (res.status === 401) { router.replace("/login"); return null; }
+    if (!res.ok) throw new Error(res.status === 404 ? "Friend not found" : "Something failed");
+    return res.json() as Promise<Friend>;
+  }, [[userId]]);
 
-      const res = await getFriendInfo(userId);
+  if (loading) return <p className="loadingText">Loading...</p>;
+  if (error) return <p className="errorBox">{(error as Error).message ?? "Something failed"}</p>;
+  if (!response) return null;
 
-      if (res.status === 200) {
-        const data = await res.json();
-        setFriend(data);
-      } else if (res.status === 401) {
-        router.replace("/login");
-      } else if (res.status === 404) {
-        setError("Friend not found");
-      } else {
-        setError("Something failed");
-      }
-    }
-
-    load();
-  }, [userId, router]);
-
-  if (error) return <p>{error}</p>;
-  if (!friend) return <p>Loading...</p>;
+  const friend = response;
 
   return (
     <div>

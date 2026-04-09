@@ -13,9 +13,12 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await register(username, password);
 
@@ -26,6 +29,7 @@ export default function Page() {
     } else {
       setError("An error occurred");
     }
+    setLoading(false);
   }
 
   return (
@@ -67,10 +71,10 @@ export default function Page() {
 
           <button
             type="submit"
-            disabled={password.length < 8 || username.length < 3}
-            className={`primaryButton ${password.length < 8 || username.length < 3 ? "buttonDisabled" : ""}`}
+            disabled={loading || password.length < 8 || username.length < 3}
+            className={`primaryButton ${loading ? "buttonLoading" : password.length < 8 || username.length < 3 ? "buttonDisabled" : ""}`}
           >
-            Submit
+            {loading ? "Registering…" : "Submit"}
           </button>
 
           <button

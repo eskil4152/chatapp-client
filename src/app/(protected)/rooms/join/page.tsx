@@ -8,9 +8,12 @@ export default function JoinRoom() {
   const router = useRouter();
   const [inviteId, setInviteId] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await respondToInvite(inviteId.trim(), "ACCEPTED");
 
@@ -29,6 +32,7 @@ export default function JoinRoom() {
     } else {
       setError("An error occurred.");
     }
+    setLoading(false);
   }
 
   return (
@@ -44,7 +48,13 @@ export default function JoinRoom() {
             onChange={(e) => setInviteId(e.target.value)}
           />
 
-          <button className="primaryButton">Join</button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`primaryButton ${loading ? "buttonLoading" : ""}`}
+          >
+            {loading ? "Joining…" : "Join"}
+          </button>
         </form>
 
         {error && <p className="errorBox">{error}</p>}

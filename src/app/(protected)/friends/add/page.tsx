@@ -9,9 +9,12 @@ export default function Page() {
 
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await sendFriendRequest(username);
 
@@ -24,6 +27,7 @@ export default function Page() {
     } else {
       setError("An error occurred");
     }
+    setLoading(false);
   }
 
   return (
@@ -39,7 +43,13 @@ export default function Page() {
             onChange={(e) => setUsername(e.target.value)}
           />
 
-          <button className="primaryButton">Send request</button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`primaryButton ${loading ? "buttonLoading" : ""}`}
+          >
+            {loading ? "Sending…" : "Send request"}
+          </button>
         </form>
 
         {error && <p className="errorBox">{error}</p>}

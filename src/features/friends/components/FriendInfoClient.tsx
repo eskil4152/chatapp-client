@@ -31,13 +31,26 @@ export default function FriendInfoClient() {
   const { loading, error, response } = useLoading(async () => {
     if (!userId) return null;
     const res = await getFriendInfo(userId);
-    if (res.status === 401) { router.replace("/login"); return null; }
-    if (!res.ok) throw new Error(res.status === 404 ? "Friend not found" : "Something failed");
-    return res.json() as Promise<Friend>;
-  }, [[userId]]);
+
+    if (res.status === 200) {
+      return res.json();
+    } else if (res.status === 401) {
+      router.replace("/login");
+      return null;
+    } else if (res.status === 404) {
+      throw new Error("Friend not found");
+    } else {
+      throw new Error("Unknown error");
+    }
+  }, [userId]);
 
   if (loading) return <p className="loadingText">Loading...</p>;
-  if (error) return <p className="errorBox">{(error as Error).message ?? "Something failed"}</p>;
+  if (error)
+    return (
+      <p className="errorBox">
+        {(error as Error).message ?? "Something failed"}
+      </p>
+    );
   if (!response) return null;
 
   const friend = response;
@@ -59,7 +72,6 @@ export default function FriendInfoClient() {
           onCancel={() => setConfirmRemove(false)}
         />
       )}
-
       <div className={styles.avatarBox}>
         <Image
           src={friend.avatarUrl || img}
@@ -74,7 +86,6 @@ export default function FriendInfoClient() {
       {friend.email && <p>{friend.email}</p>}
       {friend.birthday && <p>{friend.birthday}</p>}
       Member since: {friend.createdAt && <p>{friend.createdAt}</p>}
-
       <button
         type="button"
         className="dangerButton"

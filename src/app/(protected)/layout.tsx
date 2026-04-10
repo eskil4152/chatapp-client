@@ -7,6 +7,7 @@ import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
 import OnlineFriendsRail from "@/src/features/friends/components/OnlineFriendsRail";
 import InvitesPanel from "@/src/features/invites/components/InvitesPanel";
 import React from "react";
+import InviteToast from "@/src/shared/components/InviteToast";
 
 export default function ProtectedLayout({
   children,
@@ -36,6 +37,8 @@ export default function ProtectedLayout({
           </header>
 
           <ConnectionIndicator />
+
+          <InviteToast />
 
           <div className="appShell">
             <aside className="onlineRail">

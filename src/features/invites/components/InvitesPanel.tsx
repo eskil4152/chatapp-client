@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "@/src/style/modules/Invites.module.css";
-import { PendingInvite, OutgoingInvite } from "@/src/features/invites/types";
+import { OutgoingInvite } from "@/src/features/invites/types";
 import { useInvites } from "@/src/shared/providers/InviteProvider";
-import getPendingInvites from "@/src/features/invites/api/getPendingInvites";
 import getOutgoingInvites from "@/src/features/invites/api/getOutgoingInvites";
 import respondToInvite from "@/src/features/invites/api/respondToInvite";
 import IncomingInviteCard from "./IncomingInviteCard";
@@ -13,57 +12,62 @@ import OutgoingInviteCard from "./OutgoingInviteCard";
 type Tab = "incoming" | "outgoing";
 
 export default function InvitesPanel() {
-  const { pendingCount, setPendingCount } = useInvites();
+  const { pendingCount, pendingInvites, setPendingInvites } = useInvites();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("incoming");
-  const [incoming, setIncoming] = useState<PendingInvite[]>([]);
   const [outgoing, setOutgoing] = useState<OutgoingInvite[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingOutgoing, setLoadingOutgoing] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  async function fetchData() {
-    setLoading(true);
-    const [inRes, outRes] = await Promise.all([
-      getPendingInvites(),
-      getOutgoingInvites(),
-    ]);
-    if (inRes.status === 200 && Array.isArray(inRes.data)) {
-      setIncoming(inRes.data as PendingInvite[]);
-      setPendingCount(inRes.data.length);
-    }
+  async function fetchOutgoing() {
+    setLoadingOutgoing(true);
+
+    const outRes = await getOutgoingInvites();
+
     if (outRes.status === 200 && Array.isArray(outRes.data)) {
       setOutgoing(outRes.data as OutgoingInvite[]);
     }
-    setLoading(false);
+
+    setLoadingOutgoing(false);
   }
 
   useEffect(() => {
-    if (open) {
-      void fetchData();
+    if (open && tab === "outgoing") {
+      void fetchOutgoing();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, tab]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
+
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
     }
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
   async function handleAccept(id: string) {
-    await respondToInvite(id, "ACCEPTED");
-    void fetchData();
+    const res = await respondToInvite(id, "ACCEPTED");
+
+    if (res.ok) {
+      setPendingInvites((prev) => prev.filter((invite) => invite.id !== id));
+    }
   }
 
   async function handleReject(id: string) {
-    await respondToInvite(id, "REJECTED");
-    void fetchData();
+    const res = await respondToInvite(id, "REJECTED");
+
+    if (res.ok) {
+      setPendingInvites((prev) => prev.filter((invite) => invite.id !== id));
+    }
   }
 
   return (
@@ -88,6 +92,7 @@ export default function InvitesPanel() {
             >
               Incoming{pendingCount > 0 ? ` (${pendingCount})` : ""}
             </button>
+
             <button
               className={`${styles.tab} ${tab === "outgoing" ? styles.activeTab : ""}`}
               onClick={() => setTab("outgoing")}
@@ -97,13 +102,11 @@ export default function InvitesPanel() {
           </div>
 
           <div className={styles.panelBody}>
-            {loading ? (
-              <p className={styles.empty}>Loading...</p>
-            ) : tab === "incoming" ? (
-              incoming.length === 0 ? (
+            {tab === "incoming" ? (
+              pendingInvites.length === 0 ? (
                 <p className={styles.empty}>No pending invites</p>
               ) : (
-                incoming.map((invite) => (
+                pendingInvites.map((invite) => (
                   <IncomingInviteCard
                     key={invite.id}
                     invite={invite}
@@ -112,6 +115,8 @@ export default function InvitesPanel() {
                   />
                 ))
               )
+            ) : loadingOutgoing ? (
+              <p className={styles.empty}>Loading...</p>
             ) : outgoing.length === 0 ? (
               <p className={styles.empty}>No outgoing invites</p>
             ) : (

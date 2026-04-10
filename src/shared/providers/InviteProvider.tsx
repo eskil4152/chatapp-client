@@ -23,7 +23,6 @@ type InviteContextType = {
   pendingCount: number;
   pendingInvites: PendingInvite[];
   inviteToast: InviteToast | null;
-  setPendingCount: (count: number) => void;
   setPendingInvites: React.Dispatch<React.SetStateAction<PendingInvite[]>>;
   clearInviteToast: () => void;
 };
@@ -43,10 +42,6 @@ export function InviteProvider({ children }: { children: React.ReactNode }) {
       setPendingInvites(data);
     }
   }
-
-  useEffect(() => {
-    void refreshPendingInvites();
-  }, []);
 
   useEffect(() => {
     return subscribe((data) => {
@@ -69,7 +64,7 @@ export function InviteProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.type === "INVITE_ACCEPTED") {
-        void refreshPendingInvites();
+        return;
       }
     });
   }, [subscribe]);
@@ -89,9 +84,6 @@ export function InviteProvider({ children }: { children: React.ReactNode }) {
       pendingCount: pendingInvites.length,
       pendingInvites,
       inviteToast,
-      setPendingCount: (count: number) => {
-        setPendingInvites((prev) => prev.slice(0, count));
-      },
       setPendingInvites,
       clearInviteToast: () => setInviteToast(null),
     }),

@@ -5,12 +5,16 @@ import respondToInvite from "@/src/features/invites/api/respondToInvite";
 import styles from "@/src/style/modules/InviteToast.module.css";
 
 export default function InviteToast() {
-  const { inviteToast, clearInviteToast, setPendingInvites } = useInvites();
+  const {
+    inviteToast,
+    acceptedToast,
+    clearInviteToast,
+    clearAcceptedToast,
+    setPendingInvites,
+  } = useInvites();
 
-  const toast = inviteToast;
-  if (!toast) return null;
-
-  const isRoomInvite = toast.inviteType === "ROOM_INVITE";
+  const incoming = inviteToast;
+  const accepted = acceptedToast;
 
   async function handleAccept(id: string) {
     const res = await respondToInvite(id, "ACCEPTED");
@@ -30,36 +34,63 @@ export default function InviteToast() {
     }
   }
 
-  return (
-    <div className={styles.toast}>
-      <div className={styles.content}>
-        <p>
-          <strong>{toast.fromUsername}</strong>{" "}
-          {isRoomInvite
-            ? `invited you to ${toast.roomName ?? "a room"}`
-            : "sent you a friend request"}
-        </p>
+  if (incoming) {
+    const isRoomInvite = incoming.inviteType === "ROOM_INVITE";
 
-        <div className={styles.actions}>
-          <button
-            className="primaryButton"
-            onClick={() => handleAccept(toast.id)}
-          >
-            Accept
-          </button>
+    return (
+      <div className={styles.toast}>
+        <div className={styles.content}>
+          <p>
+            <strong>{incoming.fromUsername}</strong>{" "}
+            {isRoomInvite
+              ? `invited you to ${incoming.roomName ?? "a room"}`
+              : "sent you a friend request"}
+          </p>
 
-          <button
-            className="secondaryButton"
-            onClick={() => handleReject(toast.id)}
-          >
-            Decline
-          </button>
+          <div className={styles.actions}>
+            <button
+              className="primaryButton"
+              onClick={() => handleAccept(incoming.id)}
+            >
+              Accept
+            </button>
+
+            <button
+              className="secondaryButton"
+              onClick={() => handleReject(incoming.id)}
+            >
+              Decline
+            </button>
+          </div>
         </div>
-      </div>
 
-      <button className={styles.close} onClick={clearInviteToast}>
-        ×
-      </button>
-    </div>
-  );
+        <button className={styles.close} onClick={clearInviteToast}>
+          ×
+        </button>
+      </div>
+    );
+  }
+
+  if (accepted) {
+    const isRoomInvite = accepted.inviteType === "ROOM_INVITE";
+
+    return (
+      <div className={styles.toast}>
+        <div className={styles.content}>
+          <p>
+            <strong>{accepted.username}</strong>{" "}
+            {isRoomInvite
+              ? "accepted your room invite"
+              : "accepted your friend request"}
+          </p>
+        </div>
+
+        <button className={styles.close} onClick={clearAcceptedToast}>
+          ×
+        </button>
+      </div>
+    );
+  }
+
+  return null;
 }

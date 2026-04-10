@@ -7,9 +7,8 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useAppSocket } from "./AppSocketProvider";
-import getPendingInvites from "@/src/features/invites/api/getPendingInvites";
-import { PendingInvite } from "@/src/shared/types/ws";
+import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import { PendingInvite, WsInbound } from "@/src/shared/types/ws";
 
 type InviteToast = {
   id: string;
@@ -19,12 +18,21 @@ type InviteToast = {
   fromAvatarUrl: string | null;
 };
 
+type AcceptedToast = {
+  id: string;
+  inviteType: string;
+  username: string;
+  avatarUrl: string | null;
+};
+
 type InviteContextType = {
   pendingCount: number;
   pendingInvites: PendingInvite[];
   inviteToast: InviteToast | null;
+  acceptedToast: AcceptedToast | null;
   setPendingInvites: React.Dispatch<React.SetStateAction<PendingInvite[]>>;
   clearInviteToast: () => void;
+  clearAcceptedToast: () => void;
 };
 
 const InviteContext = createContext<InviteContextType | null>(null);
@@ -34,17 +42,12 @@ export function InviteProvider({ children }: { children: React.ReactNode }) {
 
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [inviteToast, setInviteToast] = useState<InviteToast | null>(null);
-
-  async function refreshPendingInvites() {
-    const { status, data } = await getPendingInvites();
-
-    if (status === 200 && Array.isArray(data)) {
-      setPendingInvites(data);
-    }
-  }
+  const [acceptedToast, setAcceptedToast] = useState<AcceptedToast | null>(
+    null,
+  );
 
   useEffect(() => {
-    return subscribe((data) => {
+    return subscribe((data: WsInbound) => {
       if (data.type === "PENDING_INVITES") {
         setPendingInvites(data.invites);
         return;
@@ -58,36 +61,43 @@ export function InviteProvider({ children }: { children: React.ReactNode }) {
           roomName: data.roomName,
           fromAvatarUrl: data.fromAvatarUrl,
         });
-
-        void refreshPendingInvites();
         return;
       }
 
       if (data.type === "INVITE_ACCEPTED") {
-        return;
+        setAcceptedToast({
+          id: `${data.inviteType}-${data.username}-${Date.now()}`,
+          inviteType: data.inviteType,
+          username: data.username,
+          avatarUrl: data.avatarUrl,
+        });
       }
     });
   }, [subscribe]);
 
   useEffect(() => {
     if (!inviteToast) return;
-
-    const timer = window.setTimeout(() => {
-      setInviteToast(null);
-    }, 4000);
-
+    const timer = window.setTimeout(() => setInviteToast(null), 4000);
     return () => window.clearTimeout(timer);
   }, [inviteToast]);
+
+  useEffect(() => {
+    if (!acceptedToast) return;
+    const timer = window.setTimeout(() => setAcceptedToast(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [acceptedToast]);
 
   const value = useMemo(
     () => ({
       pendingCount: pendingInvites.length,
       pendingInvites,
       inviteToast,
+      acceptedToast,
       setPendingInvites,
       clearInviteToast: () => setInviteToast(null),
+      clearAcceptedToast: () => setAcceptedToast(null),
     }),
-    [pendingInvites, inviteToast],
+    [pendingInvites, inviteToast, acceptedToast],
   );
 
   return (

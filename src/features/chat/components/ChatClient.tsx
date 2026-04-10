@@ -10,6 +10,8 @@ import ChatHeader from "@/src/features/chat/components/ChatHeader";
 import ChatStatus from "@/src/features/chat/components/ChatStatus";
 import ChatInput from "@/src/features/chat/components/ChatInput";
 import useChatRoomSession from "@/src/features/chat/hooks/useChatRoomSession";
+import Image from "next/image";
+import defaultProfile from "@/public/images/default_profile.png";
 
 export default function ChatClient() {
   const searchParams = useSearchParams();
@@ -147,9 +149,21 @@ function ChatClientInner({ roomId }: { roomId: string }) {
         <ul className={styles.onlineList}>
           {members.map((user) => (
             <li key={user.id} className={styles.onlineUser}>
-              <span
-                className={`${styles.onlineDot} ${user.online ? "" : styles.offlineDot}`}
-              />
+              <div className={styles.memberAvatarBox}>
+                <Image
+                  src={user.avatar || defaultProfile}
+                  alt={`${user.username} avatar`}
+                  width={34}
+                  height={34}
+                  className={styles.memberAvatar}
+                />
+                <span
+                  className={`${styles.memberStatusDot} ${
+                    user.online ? styles.memberOnline : styles.memberOffline
+                  }`}
+                />
+              </div>
+
               <span className={styles.memberName}>{user.username}</span>
             </li>
           ))}

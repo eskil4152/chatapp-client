@@ -9,6 +9,7 @@ import Image from "next/image";
 import styles from "@/src/style/modules/Friends.module.css";
 import img from "@/public/images/default_profile.png";
 import useLoading from "@/src/shared/hooks/useLoading";
+import formatTimestamp from "@/src/shared/lib/formatTimestamp";
 
 type Friend = {
   username: string;
@@ -85,7 +86,7 @@ export default function FriendInfoClient() {
       {friend.bio && <p>{friend.bio}</p>}
       {friend.email && <p>{friend.email}</p>}
       {friend.birthday && <p>{friend.birthday}</p>}
-      Member since: {friend.createdAt && <p>{friend.createdAt}</p>}
+      <p>Friends since: {formatTimestamp(friend.friendsSince)}</p>
       <button
         type="button"
         className="dangerButton"

@@ -8,12 +8,23 @@ import { OwnerRoomCard } from "@/src/features/rooms/components/OwnerRoomCard";
 import RoomCard from "@/src/features/rooms/components/RoomCard";
 import FriendRoomCard from "@/src/features/rooms/components/FriendRoomCard";
 import { RoomType } from "@/src/features/rooms/types";
+import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
 
 export default function Rooms() {
   const router = useRouter();
 
+  const { subscribe } = useAppSocket();
   const { loading, error, response } = useRooms();
   const [rooms, setRooms] = useState<RoomType[]>([]);
+
+  useEffect(() => {
+    return subscribe((data) => {
+      if (data.type === "ROOM_DELETED") {
+        setRooms((prev) => prev.filter((room) => room.roomId !== data.roomId));
+        return;
+      }
+    });
+  }, [subscribe]);
 
   useEffect(() => {
     if (response?.status === 401) {
@@ -43,7 +54,9 @@ export default function Rooms() {
     <div className="pageList">
       {loading && <p className="empty">Loading...</p>}
       {!loading && !!error && <p className="errorBox">Failed to load rooms</p>}
-      {!loading && !error && rooms.length === 0 && <p className="empty">No rooms :(</p>}
+      {!loading && !error && rooms.length === 0 && (
+        <p className="empty">No rooms :(</p>
+      )}
 
       {manageableRooms.length > 0 && (
         <>

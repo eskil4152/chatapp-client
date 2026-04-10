@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "@/src/style/modules/Chat.module.css";
 import useChatHistory from "@/src/features/chat/hooks/useChatHistory";
 import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
@@ -24,6 +24,7 @@ export default function ChatClient() {
 }
 
 function ChatClientInner({ roomId }: { roomId: string }) {
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -32,7 +33,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
 
-  const { joined, roomName, encrypted, role, error, rateLimited, members } =
+  const { joined, roomName, encrypted, error, rateLimited, members } =
     useChatRoomSession({
       roomId,
       connected,
@@ -41,6 +42,16 @@ function ChatClientInner({ roomId }: { roomId: string }) {
       loadMessages,
       setMessages,
     });
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    return subscribe((data) => {
+      if (data.type === "ROOM_DELETED" && data.roomId === roomId) {
+        router.replace("/rooms");
+      }
+    });
+  }, [subscribe, roomId, router]);
 
   useEffect(() => {
     const el = messagesRef.current;

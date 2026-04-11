@@ -11,7 +11,7 @@ interface UseLoadingResult<T> {
 
 export default function useLoading<T>(
   loadingFunction: () => Promise<T>,
-  deps: DependencyList[] = [],
+  deps: DependencyList = [],
 ): UseLoadingResult<T> {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>();

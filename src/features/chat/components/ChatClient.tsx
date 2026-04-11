@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "@/src/style/modules/Chat.module.css";
 import useChatHistory from "@/src/features/chat/hooks/useChatHistory";
 import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
@@ -10,6 +10,8 @@ import ChatHeader from "@/src/features/chat/components/ChatHeader";
 import ChatStatus from "@/src/features/chat/components/ChatStatus";
 import ChatInput from "@/src/features/chat/components/ChatInput";
 import useChatRoomSession from "@/src/features/chat/hooks/useChatRoomSession";
+import Image from "next/image";
+import defaultProfile from "@/public/images/default_profile.png";
 
 export default function ChatClient() {
   const searchParams = useSearchParams();
@@ -24,6 +26,7 @@ export default function ChatClient() {
 }
 
 function ChatClientInner({ roomId }: { roomId: string }) {
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -32,7 +35,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
 
-  const { joined, roomName, encrypted, role, error, rateLimited, members } =
+  const { joined, roomName, encrypted, error, rateLimited, members } =
     useChatRoomSession({
       roomId,
       connected,
@@ -41,6 +44,16 @@ function ChatClientInner({ roomId }: { roomId: string }) {
       loadMessages,
       setMessages,
     });
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    return subscribe((data) => {
+      if (data.type === "ROOM_DELETED" && data.roomId === roomId) {
+        router.replace("/rooms");
+      }
+    });
+  }, [subscribe, roomId, router]);
 
   useEffect(() => {
     const el = messagesRef.current;
@@ -136,9 +149,21 @@ function ChatClientInner({ roomId }: { roomId: string }) {
         <ul className={styles.onlineList}>
           {members.map((user) => (
             <li key={user.id} className={styles.onlineUser}>
-              <span
-                className={`${styles.onlineDot} ${user.online ? "" : styles.offlineDot}`}
-              />
+              <div className={styles.memberAvatarBox}>
+                <Image
+                  src={user.avatar || defaultProfile}
+                  alt={`${user.username} avatar`}
+                  width={34}
+                  height={34}
+                  className={styles.memberAvatar}
+                />
+                <span
+                  className={`${styles.memberStatusDot} ${
+                    user.online ? styles.memberOnline : styles.memberOffline
+                  }`}
+                />
+              </div>
+
               <span className={styles.memberName}>{user.username}</span>
             </li>
           ))}

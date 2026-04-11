@@ -1,3 +1,5 @@
+import { InviteType } from "@/src/features/invites/types";
+
 export type WsError = {
   type: "ERROR";
   code: number;
@@ -44,8 +46,6 @@ export type WsRoomPresence = {
 export type WsFriendPresence = {
   type: "FRIEND_PRESENCE";
   userId: string;
-  username: string;
-  avatarUrl: string | null;
   online: boolean;
 };
 
@@ -61,24 +61,53 @@ export type WsFriendSnapshot = {
   friends: OnlineFriend[];
 };
 
+export type WsFriendRemoved = {
+  type: "FRIEND_REMOVED";
+  userId: string;
+};
+
+export type WsFriendAdded = {
+  type: "FRIEND_ADDED";
+  userId: string;
+  username: string;
+  avatarUrl: string | null;
+  online: boolean;
+};
+
 export type WsRoomDeleted = {
   type: "ROOM_DELETED";
   roomId: string;
   roomName: string;
 };
 
+export type PendingInvite = {
+  id: string;
+  type: InviteType;
+  fromUserId: string;
+  fromUsername: string;
+  fromAvatarUrl: string | null;
+  roomId: string | null;
+  roomName: string | null;
+  expiresAt: string;
+};
+
+export type WsPendingInvitesSnapshot = {
+  type: "PENDING_INVITES";
+  invites: PendingInvite[];
+};
+
 export type WsInviteReceived = {
   type: "INVITE_RECEIVED";
   id: string;
-  inviteType: "FRIEND_REQUEST" | "ROOM_INVITE" | "OPEN_ROOM_INVITE";
-  fromUserId: string;
-  roomId: string | null;
-  expiresAt: string;
+  inviteType: InviteType;
+  fromUsername: string;
+  roomName: string | null;
+  fromAvatarUrl: string | null;
 };
 
 export type WsInviteAccepted = {
   type: "INVITE_ACCEPTED";
-  inviteType: "FRIEND_REQUEST" | "ROOM_INVITE" | "OPEN_ROOM_INVITE";
+  inviteType: InviteType;
   roomId: string | null;
   username: string;
   avatarUrl: string | null;
@@ -93,6 +122,9 @@ export type WsInbound =
   | WsRoomDeleted
   | WsFriendSnapshot
   | WsFriendPresence
+  | WsFriendAdded
+  | WsFriendRemoved
+  | WsPendingInvitesSnapshot
   | WsInviteReceived
   | WsInviteAccepted;
 

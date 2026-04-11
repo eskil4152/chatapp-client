@@ -10,9 +10,12 @@ export default function AddRoom() {
   const [roomName, setRoomName] = useState("");
   const [encryption, setEncryption] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await makeRoom(roomName, encryption);
 
@@ -23,6 +26,7 @@ export default function AddRoom() {
     } else if (data.status === 400) {
       setError("Invalid room name");
     }
+    setLoading(false);
   }
 
   return (
@@ -46,7 +50,13 @@ export default function AddRoom() {
             Encryption: {encryption ? "Enabled" : "Disabled"}
           </button>
 
-          <button className="primaryButton">Create</button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`primaryButton ${loading ? "buttonLoading" : ""}`}
+          >
+            {loading ? "Creating…" : "Create"}
+          </button>
         </form>
 
         {error && <p className="errorBox">{error}</p>}

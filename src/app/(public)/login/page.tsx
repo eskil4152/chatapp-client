@@ -12,9 +12,12 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const data = await login(username, password);
 
@@ -25,6 +28,7 @@ export default function Page() {
     } else {
       setError("An error occurred");
     }
+    setLoading(false);
   }
 
   return (
@@ -47,7 +51,13 @@ export default function Page() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button className="primaryButton">Log In</button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`primaryButton ${loading ? "buttonLoading" : ""}`}
+          >
+            {loading ? "Logging in…" : "Log In"}
+          </button>
 
           <button
             type="button"

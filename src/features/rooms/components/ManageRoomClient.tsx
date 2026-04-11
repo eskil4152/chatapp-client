@@ -57,6 +57,7 @@ export default function ManageRoomClient() {
   const [roomName, setRoomName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [settingsError, setSettingsError] = useState("");
+  const [renamingLoading, setRenamingLoading] = useState(false);
 
   // Members
   const [members, setMembers] = useState<Member[]>([]);
@@ -73,13 +74,17 @@ export default function ManageRoomClient() {
   const [inviteError, setInviteError] = useState("");
   const [inviteUserId, setInviteUserId] = useState("");
   const [inviteUserStatus, setInviteUserStatus] = useState("");
+  const [inviteUserLoading, setInviteUserLoading] = useState(false);
+  const [generateInviteLoading, setGenerateInviteLoading] = useState(false);
 
   const [loadError, setLoadError] = useState("");
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!roomId) return;
 
     async function load() {
+      setDataLoading(true);
       const [membersRes, bansRes, invitesRes] = await Promise.all([
         getRoomMembers(roomId),
         isAtLeast("ADMIN") ? getBanList(roomId) : Promise.resolve(null),
@@ -101,6 +106,7 @@ export default function ManageRoomClient() {
         const all = (invitesRes.data as OutgoingOpenRoomInvite[]) ?? [];
         setOpenInvites(all.filter((i) => i.type === "OPEN_ROOM_INVITE" && i.roomId === roomId));
       }
+      setDataLoading(false);
     }
 
     void load();
@@ -108,6 +114,7 @@ export default function ManageRoomClient() {
 
   async function handleRename(e: React.FormEvent) {
     e.preventDefault();
+    setRenamingLoading(true);
     const res = await editRoom(roomId, roomName);
     if (res.status === 200) {
       setSettingsError("");
@@ -119,6 +126,7 @@ export default function ManageRoomClient() {
     } else {
       setSettingsError("Invalid room name.");
     }
+    setRenamingLoading(false);
   }
 
   async function handleDelete() {
@@ -167,6 +175,7 @@ export default function ManageRoomClient() {
   async function handleInviteUser(e: React.FormEvent) {
     e.preventDefault();
     setInviteUserStatus("");
+    setInviteUserLoading(true);
     const res = await sendRoomInvite(inviteUserId.trim(), roomId);
     if (res.ok) {
       setInviteUserId("");
@@ -182,6 +191,7 @@ export default function ManageRoomClient() {
     } else {
       setInviteUserStatus("Failed to send invite.");
     }
+    setInviteUserLoading(false);
   }
 
   async function handleGenerateInvite(e: React.FormEvent) {
@@ -192,6 +202,7 @@ export default function ManageRoomClient() {
       return;
     }
 
+    setGenerateInviteLoading(true);
     const res = await createOpenInvite(roomId, usages);
     if (res.ok) {
       const id = (await res.text()).trim();
@@ -208,12 +219,21 @@ export default function ManageRoomClient() {
     } else {
       setInviteError("Failed to generate invite.");
     }
+    setGenerateInviteLoading(false);
   }
 
   if (loadError) {
     return (
       <div className="pageShellNarrow">
         <p className="errorBox">{loadError}</p>
+      </div>
+    );
+  }
+
+  if (dataLoading) {
+    return (
+      <div className="pageShellNarrow">
+        <p className="loadingText">Loading room data…</p>
       </div>
     );
   }
@@ -259,8 +279,11 @@ export default function ManageRoomClient() {
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
               />
-              <button className="primaryButton" disabled={roomName.trim().length === 0}>
-                Rename
+              <button
+                className={`primaryButton ${renamingLoading ? "buttonLoading" : ""}`}
+                disabled={renamingLoading || roomName.trim().length === 0}
+              >
+                {renamingLoading ? "Renaming…" : "Rename"}
               </button>
             </form>
 
@@ -294,8 +317,11 @@ export default function ManageRoomClient() {
                 value={inviteUserId}
                 onChange={(e) => setInviteUserId(e.target.value)}
               />
-              <button className="primaryButton" disabled={inviteUserId.trim().length === 0}>
-                Send invite
+              <button
+                className={`primaryButton ${inviteUserLoading ? "buttonLoading" : ""}`}
+                disabled={inviteUserLoading || inviteUserId.trim().length === 0}
+              >
+                {inviteUserLoading ? "Sending…" : "Send invite"}
               </button>
             </form>
             {inviteUserStatus && <p className="statusBox">{inviteUserStatus}</p>}
@@ -316,7 +342,12 @@ export default function ManageRoomClient() {
                 value={maxUsages}
                 onChange={(e) => setMaxUsages(e.target.value)}
               />
-              <button className="primaryButton">Generate invite</button>
+              <button
+                className={`primaryButton ${generateInviteLoading ? "buttonLoading" : ""}`}
+                disabled={generateInviteLoading}
+              >
+                {generateInviteLoading ? "Generating…" : "Generate invite"}
+              </button>
             </form>
 
             {inviteError && <p className="errorBox">{inviteError}</p>}

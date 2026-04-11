@@ -12,6 +12,7 @@ import { OnlineFriend } from "@/src/shared/types/ws";
 
 type FriendPresenceContextType = {
   onlineFriends: OnlineFriend[];
+  allFriendsPresence: OnlineFriend[];
   isOnline: (userId: string) => boolean;
 };
 
@@ -40,35 +41,64 @@ export function FriendPresenceProvider({
         return;
       }
 
-      if (data.type !== "FRIEND_PRESENCE") return;
-
-      setFriendsMap((prev) => {
-        const next = new Map(prev);
-        const existing = next.get(data.userId);
-
-        next.set(data.userId, {
-          userId: data.userId,
-          username: data.username ?? existing?.username ?? "",
-          avatarUrl: data.avatarUrl ?? existing?.avatarUrl ?? null,
-          online: data.online,
+      if (data.type === "FRIEND_ADDED") {
+        setFriendsMap((prev) => {
+          const next = new Map(prev);
+          next.set(data.userId, {
+            userId: data.userId,
+            username: data.username,
+            avatarUrl: data.avatarUrl,
+            online: data.online,
+          });
+          return next;
         });
+        return;
+      }
 
-        return next;
-      });
+      if (data.type === "FRIEND_REMOVED") {
+        setFriendsMap((prev) => {
+          const next = new Map(prev);
+          next.delete(data.userId);
+          return next;
+        });
+        return;
+      }
+
+      if (data.type === "FRIEND_PRESENCE") {
+        setFriendsMap((prev) => {
+          const existing = prev.get(data.userId);
+          if (!existing) {
+            return prev;
+          }
+
+          const next = new Map(prev);
+          next.set(data.userId, {
+            ...existing,
+            online: data.online,
+          });
+          return next;
+        });
+      }
     });
   }, [subscribe]);
 
-  const onlineFriends = useMemo(
-    () => Array.from(friendsMap.values()).filter((friend) => friend.online),
+  const allFriendsPresence = useMemo(
+    () => Array.from(friendsMap.values()),
     [friendsMap],
+  );
+
+  const onlineFriends = useMemo(
+    () => allFriendsPresence.filter((friend) => friend.online),
+    [allFriendsPresence],
   );
 
   const value = useMemo(
     () => ({
       onlineFriends,
+      allFriendsPresence,
       isOnline: (userId: string) => friendsMap.get(userId)?.online === true,
     }),
-    [onlineFriends, friendsMap],
+    [onlineFriends, allFriendsPresence, friendsMap],
   );
 
   return (

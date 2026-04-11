@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import getFriendInfo from "@/src/features/friends/api/getFriendInfo";
 import removeFriend from "@/src/features/friends/api/removeFriend";
@@ -10,6 +10,7 @@ import styles from "@/src/style/modules/Friends.module.css";
 import img from "@/public/images/default_profile.png";
 import useLoading from "@/src/shared/hooks/useLoading";
 import formatTimestamp from "@/src/shared/lib/formatTimestamp";
+import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
 
 type Friend = {
   username: string;
@@ -19,6 +20,7 @@ type Friend = {
   avatarUrl?: string | null;
   birthday?: string;
   createdAt?: string;
+  friendsSince?: string;
   online?: boolean;
 };
 
@@ -27,6 +29,7 @@ export default function FriendInfoClient() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
+  const { subscribe } = useAppSocket();
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const { loading, error, response } = useLoading(async () => {
@@ -45,6 +48,15 @@ export default function FriendInfoClient() {
     }
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId) return;
+    return subscribe((data) => {
+      if (data.type === "FRIEND_REMOVED" && data.userId === userId) {
+        router.replace("/friends");
+      }
+    });
+  }, [subscribe, userId, router]);
+
   if (loading) return <p className="loadingText">Loading...</p>;
   if (error)
     return (
@@ -57,7 +69,7 @@ export default function FriendInfoClient() {
   const friend = response;
 
   return (
-    <div>
+    <div className="pageShellNarrow">
       {confirmRemove && (
         <ConfirmPopup
           message={`Remove ${friend.username} from friends? This cannot be undone.`}
@@ -73,27 +85,66 @@ export default function FriendInfoClient() {
           onCancel={() => setConfirmRemove(false)}
         />
       )}
-      <div className={styles.avatarBox}>
-        <Image
-          src={friend.avatarUrl || img}
-          alt={`${friend.username} avatar`}
-          width={48}
-          height={48}
-        />
+      <div className="card">
+        <div className={styles.profileHeader}>
+          <div className={styles.profileAvatarWrap}>
+            <Image
+              src={friend.avatarUrl || img}
+              alt={`${friend.username} avatar`}
+              width={88}
+              height={88}
+            />
+            {friend.online !== undefined && (
+              <span
+                className={`${styles.statusDot} ${friend.online ? styles.online : styles.offline}`}
+              />
+            )}
+          </div>
+          <h1 className={styles.profileName}>{friend.username}</h1>
+          {friend.fullName && (
+            <p className={styles.profileFullName}>{friend.fullName}</p>
+          )}
+        </div>
+
+        <div className={styles.profileFields}>
+          {friend.bio && (
+            <div>
+              <span className={styles.fieldLabel}>Bio</span>
+              <div className={styles.fieldValue}>{friend.bio}</div>
+            </div>
+          )}
+          {friend.email && (
+            <div>
+              <span className={styles.fieldLabel}>Email</span>
+              <div className={styles.fieldValue}>{friend.email}</div>
+            </div>
+          )}
+          {friend.birthday && (
+            <div>
+              <span className={styles.fieldLabel}>Birthday</span>
+              <div className={styles.fieldValue}>{friend.birthday}</div>
+            </div>
+          )}
+          {friend.friendsSince && (
+            <div>
+              <span className={styles.fieldLabel}>Friends since</span>
+              <div className={styles.fieldValue}>
+                {formatTimestamp(friend.friendsSince)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="pageActions">
+          <button
+            type="button"
+            className="dangerButton"
+            onClick={() => setConfirmRemove(true)}
+          >
+            Remove friend
+          </button>
+        </div>
       </div>
-      <h1>{friend.username}</h1>
-      {friend.fullName && <p>{friend.fullName}</p>}
-      {friend.bio && <p>{friend.bio}</p>}
-      {friend.email && <p>{friend.email}</p>}
-      {friend.birthday && <p>{friend.birthday}</p>}
-      <p>Friends since: {formatTimestamp(friend.friendsSince)}</p>
-      <button
-        type="button"
-        className="dangerButton"
-        onClick={() => setConfirmRemove(true)}
-      >
-        Remove friend
-      </button>
     </div>
   );
 }

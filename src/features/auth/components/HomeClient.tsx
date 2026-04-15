@@ -27,7 +27,17 @@ export default function HomeClient() {
       return;
     }
 
-    router.replace(response?.status === 200 ? "/rooms" : "/login");
+    if (response?.status === 200) {
+      const siteRole =
+        typeof response.data === "string" ? response.data : undefined;
+
+      console.log("Role: ", siteRole);
+
+      if (siteRole) sessionStorage.setItem("siteRole", siteRole);
+      router.replace("/rooms");
+    } else {
+      router.replace("/login");
+    }
   }, [loading, error, response, router]);
 
   if (loading) {

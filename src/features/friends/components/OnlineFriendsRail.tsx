@@ -16,7 +16,6 @@ export default function OnlineFriendsRail() {
         <Link
           key={friend.userId}
           href={`/friends/info?userId=${friend.userId}`}
-          title={friend.username ?? ""}
         >
           <Image
             src={friend.avatarUrl || img}
@@ -25,7 +24,7 @@ export default function OnlineFriendsRail() {
             height={36}
             style={{ borderRadius: "999px" }}
           />
-          <p>{friend.username}</p>
+          <span className="railTooltip">{friend.username}</span>
         </Link>
       ))}
     </>

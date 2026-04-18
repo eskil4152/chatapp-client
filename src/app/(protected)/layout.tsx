@@ -1,13 +1,9 @@
-import Link from "next/link";
-import { AppSocketProvider } from "@/src/shared/providers/AppSocketProvider";
-import { FriendPresenceProvider } from "@/src/shared/providers/FriendPresenceProvider";
-import { InviteProvider } from "@/src/shared/providers/InviteProvider";
-import HeaderAvatar from "@/src/features/user/components/HeaderAvatar";
-import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
-import OnlineFriendsRail from "@/src/features/friends/components/OnlineFriendsRail";
-import InvitesPanel from "@/src/features/invites/components/InvitesPanel";
 import React from "react";
+import AppProviders from "@/src/shared/providers/AppProviders";
+import AppHeader from "@/src/shared/components/AppHeader";
+import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
 import InviteToast from "@/src/shared/components/InviteToast";
+import OnlineFriendsRail from "@/src/features/friends/components/OnlineFriendsRail";
 
 export default function ProtectedLayout({
   children,
@@ -15,40 +11,20 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppSocketProvider>
-      <FriendPresenceProvider>
-        <InviteProvider>
-          <header className="header">
-            <div className="headerLeft">
-              <Link href="/" className="logo">
-                ChatApp
-              </Link>
-            </div>
+    <AppProviders>
+      <AppHeader />
 
-            <nav className="headerCenter">
-              <Link href="/rooms">Rooms</Link>
-            </nav>
+      <ConnectionIndicator />
 
-            <div className="headerRight">
-              <Link href="/friends">Friends</Link>
-              <InvitesPanel />
-              <HeaderAvatar />
-            </div>
-          </header>
+      <InviteToast />
 
-          <ConnectionIndicator />
+      <div className="appShell">
+        <aside className="onlineRail">
+          <OnlineFriendsRail />
+        </aside>
 
-          <InviteToast />
-
-          <div className="appShell">
-            <aside className="onlineRail">
-              <OnlineFriendsRail />
-            </aside>
-
-            <main className="main">{children}</main>
-          </div>
-        </InviteProvider>
-      </FriendPresenceProvider>
-    </AppSocketProvider>
+        <main className="main">{children}</main>
+      </div>
+    </AppProviders>
   );
 }

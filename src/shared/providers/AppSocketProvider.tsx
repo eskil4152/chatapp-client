@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import { WsInbound } from "@/src/shared/types/ws";
+import { clearSession } from "@/src/shared/lib/clearSession";
 
 type AppSocketContextType = {
   connected: boolean;
@@ -68,6 +69,8 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
         setConnected(true);
         setError("");
 
+        ws.send(JSON.stringify({ type: "SYNC" }));
+
         pingTimerRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "PING" }));
@@ -84,7 +87,7 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
         }
         if (!data || typeof data !== "object" || !("type" in data)) return;
         if (data.type === "ERROR") {
-          if (data.code === 401) router.replace("/login");
+          if (data.code === 401) { clearSession(); router.replace("/login"); }
           else if (data.code === 403) router.replace("/rooms");
         }
         listenersRef.current.forEach((listener) => listener(data));

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import styles from "@/src/style/modules/User.module.css";
 import Link from "next/link";
 import logout from "@/src/features/auth/api/logout";
+import { clearSession } from "@/src/shared/lib/clearSession";
 import deleteUser from "@/src/features/user/api/deleteUser";
 import ConfirmPopup from "@/src/shared/components/ConfirmPopup";
 
@@ -207,7 +208,7 @@ function UserInfoForm({ data }: { data: UserData }) {
             type="button"
             className="dangerButton"
             onClick={async () => {
-              await logout().then(() => router.push("/login"));
+              await logout().then(() => { clearSession(); router.push("/login"); });
             }}
           >
             Log out

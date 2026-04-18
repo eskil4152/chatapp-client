@@ -69,6 +69,8 @@ export function AppSocketProvider({ children }: { children: React.ReactNode }) {
         setConnected(true);
         setError("");
 
+        ws.send(JSON.stringify({ type: "SYNC" }));
+
         pingTimerRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "PING" }));

@@ -7,12 +7,12 @@ import {
   banUser,
 } from "@/src/features/admin/api/adminApi";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { SITE_ROLES, SiteRole } from "@/src/shared/lib/siteRole";
+import { SITE_ROLES, UserRole } from "@/src/shared/lib/userRole";
 import { UserDetailDTO } from "@/src/features/admin/types";
 
 export default function FindUser() {
   const { siteRole } = useAuth();
-  const myRank = SITE_ROLES.indexOf((siteRole ?? "USER") as SiteRole);
+  const myRank = SITE_ROLES.indexOf((siteRole ?? "USER") as UserRole);
 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,7 +79,7 @@ export default function FindUser() {
     }
   }
 
-  const targetRank = user ? SITE_ROLES.indexOf(user.role as SiteRole) : -1;
+  const targetRank = user ? SITE_ROLES.indexOf(user.role as UserRole) : -1;
   const canModify = user !== null && myRank > targetRank;
   const canPromote = canModify && targetRank + 1 < SITE_ROLES.length;
 

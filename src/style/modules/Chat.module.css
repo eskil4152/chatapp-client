@@ -10,7 +10,7 @@
 
 .card {
     flex: 1;
-    min-width: 0; /* prevents flex blowout on long messages */
+    min-width: 0;
     padding: 25px;
 }
 
@@ -91,35 +91,62 @@
     background: #9ca3af;
 }
 
-.title {
-    font-size: 1.4rem;
-    font-weight: 700;
+.header {
+    display: flex;
+    align-items: center;
     margin-bottom: 10px;
+}
+
+.headerSpacer {
+    flex: 1;
+}
+
+.headerRight {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    text-align: center;
 }
 
 .roomMeta {
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
 }
 
 .messages {
-    background: var(--bg-main);
-    border-radius: var(--radius-input);
     max-height: 350px;
     overflow-y: auto;
     margin: 15px 0;
     padding: 0 16px;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .message {
     padding: 12px 0;
     border-bottom: 1px solid var(--border-soft);
+    width: 100%;
+}
+
+.myOwn {
+    text-align: right;
+}
+
+.myOwn .messageTopRow {
+    justify-content: flex-end;
 }
 
 .message:last-child {
     border-bottom: none;
 }
+
 
 .sender {
     font-weight: 700;
@@ -133,6 +160,20 @@
     color: var(--text-main);
     line-height: 1.35;
     word-break: break-word;
+}
+
+.messageTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 3px;
+}
+
+.timestamp {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap;
 }
 
 .form {
@@ -154,37 +195,18 @@
     margin-top: 12px;
 }
 
-.messageTopRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 3px;
-}
-
-.timestamp {
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.65);
-    white-space: nowrap;
-}
-
 .memberAvatarBox {
     position: relative;
     width: 34px;
     height: 34px;
     flex: 0 0 34px;
-
-    border-radius: 50%;
-    overflow: hidden;
 }
 
 .memberAvatar {
     width: 100%;
     height: 100%;
-
     object-fit: cover;
     display: block;
-
     border-radius: 50%;
 }
 

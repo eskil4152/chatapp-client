@@ -1,9 +1,9 @@
-import { SiteRole } from "@/src/shared/lib/siteRole";
+import { UserRole } from "@/src/shared/lib/userRole";
 
 export type ElevatedUserDTO = {
   userId: string;
   username: string;
-  role: SiteRole;
+  role: UserRole;
 };
 
 export type JoinedRoomDTO = {
@@ -18,7 +18,7 @@ export type UserDetailDTO = {
   email?: string;
   fullName?: string;
   avatarUrl?: string;
-  role: SiteRole;
+  role: UserRole;
   createdAt: string;
   rooms?: JoinedRoomDTO[];
 };
@@ -28,14 +28,14 @@ export type BannedUserDTO = {
   username: string;
   bannedBy: string;
   bannedByUsername: string;
-  bannedByRole: SiteRole;
+  bannedByRole: UserRole;
   bannedAt: string;
   reason?: string;
 };
 
 export type UserRoleDTO = {
   userId: string;
-  role: SiteRole;
+  role: UserRole;
 };
 
 export type BanUserDTO = {

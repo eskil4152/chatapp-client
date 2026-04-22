@@ -8,6 +8,7 @@ export type WsError = {
 
 export type WsChat = {
   type: "MESSAGE" | "JOIN" | "LEAVE";
+  userId: string;
   username: string;
   content: string;
   timestamp: string;
@@ -116,6 +117,7 @@ export type WsInviteAccepted = {
 export type WsTyping = {
   type: "TYPING";
   username: string;
+  userId: string;
   roomId: string;
 };
 

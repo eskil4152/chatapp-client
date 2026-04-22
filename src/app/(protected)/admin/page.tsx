@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { isAtLeastSiteRole } from "@/src/shared/lib/siteRole";
+import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 
 export default function AdminPage() {
   const router = useRouter();

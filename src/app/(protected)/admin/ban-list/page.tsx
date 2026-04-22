@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { isAtLeastSiteRole } from "@/src/shared/lib/siteRole";
+import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 import BanList from "@/src/features/admin/components/BanList";
 
 export default function BanListPage() {

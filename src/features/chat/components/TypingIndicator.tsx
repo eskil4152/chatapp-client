@@ -4,6 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import styles from "@/src/style/modules/TypingIndicator.module.css";
 import { WsInbound } from "@/src/shared/types/ws";
 
+type TypingState = {
+  userId: string;
+  username: string;
+} | null;
+
+type SubscribeFn = (listener: (event: WsInbound) => void) => () => void;
+
 export function TypingIndicator({ userName }: { userName: string }) {
   return (
     <div className={styles.row}>
@@ -21,10 +28,12 @@ export function TypingIndicator({ userName }: { userName: string }) {
   );
 }
 
-type SubscribeFn = (listener: (event: WsInbound) => void) => () => void;
-
-export function useTypingIndicator(subscribe: SubscribeFn, roomId: string) {
-  const [typingUser, setTypingUser] = useState<string | null>(null);
+export function useTypingIndicator(
+  subscribe: SubscribeFn,
+  roomId: string,
+  currentUserId?: string,
+) {
+  const [typing, setTyping] = useState<TypingState>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimer = () => {
@@ -37,16 +46,21 @@ export function useTypingIndicator(subscribe: SubscribeFn, roomId: string) {
   useEffect(() => {
     return subscribe((data) => {
       if (data.type === "TYPING" && data.roomId === roomId) {
-        setTypingUser(data.username);
+        if (currentUserId && data.userId === currentUserId) return;
+
+        setTyping({
+          userId: data.userId,
+          username: data.username,
+        });
+
         clearTimer();
-        timerRef.current = setTimeout(() => setTypingUser(null), 4000);
+        timerRef.current = setTimeout(() => setTyping(null), 4000);
         return;
       }
 
-      // Clear when the typing user sends a real message
       if (data.type === "MESSAGE") {
-        setTypingUser((prev) => {
-          if (prev === data.username) {
+        setTyping((prev) => {
+          if (prev?.userId === data.userId) {
             clearTimer();
             return null;
           }
@@ -54,9 +68,9 @@ export function useTypingIndicator(subscribe: SubscribeFn, roomId: string) {
         });
       }
     });
-  }, [subscribe, roomId]);
+  }, [subscribe, roomId, currentUserId]);
 
   useEffect(() => () => clearTimer(), []);
 
-  return typingUser;
+  return typing;
 }

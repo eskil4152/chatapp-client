@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { isAtLeastSiteRole } from "@/src/shared/lib/siteRole";
+import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 
 export default function ElevatedNav() {
   const { siteRole } = useAuth();

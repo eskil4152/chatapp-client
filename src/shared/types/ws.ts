@@ -125,9 +125,8 @@ export type WsMessageNotification = {
   type: "MESSAGE_NOTIFICATION";
   roomId: string;
   roomName: string;
-  userId: string;
   username: string;
-  preview: string;
+  message: string;
 };
 
 export type WsInbound =

@@ -121,6 +121,15 @@ export type WsTyping = {
   roomId: string;
 };
 
+export type WsMessageNotification = {
+  type: "MESSAGE_NOTIFICATION";
+  roomId: string;
+  roomName: string;
+  userId: string;
+  username: string;
+  preview: string;
+};
+
 export type WsInbound =
   | WsError
   | WsChat
@@ -135,7 +144,8 @@ export type WsInbound =
   | WsPendingInvitesSnapshot
   | WsInviteReceived
   | WsInviteAccepted
-  | WsTyping;
+  | WsTyping
+  | WsMessageNotification;
 
 export type HistoryMessage = {
   id: string;

@@ -49,7 +49,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
 
-  const typingEvent = useTypingIndicator(subscribe, roomId);
+  const typingEvent = useTypingIndicator(subscribe, roomId, user?.userId);
 
   const typingUser =
     typingEvent?.userId && user?.userId === typingEvent.userId

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import AppProviders from "@/src/shared/providers/AppProviders";
 import AppHeader from "@/src/shared/components/AppHeader";
 import ConnectionIndicator from "@/src/shared/components/ConnectionIndicator";
@@ -18,7 +18,7 @@ export default function ProtectedLayout({
       <ConnectionIndicator />
 
       <InviteToast />
-      <MessageNotificationToast />
+      <Suspense><MessageNotificationToast /></Suspense>
 
       <div className="appShell">
         <aside className="onlineRail">

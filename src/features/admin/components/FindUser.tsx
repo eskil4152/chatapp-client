@@ -11,8 +11,8 @@ import { SITE_ROLES, UserRole } from "@/src/shared/lib/userRole";
 import { UserDetailDTO } from "@/src/features/admin/types";
 
 export default function FindUser() {
-  const { user } = useAuth();
-  const myRank = SITE_ROLES.indexOf((user?.userRole ?? "USER") as UserRole);
+  const { user: authUser } = useAuth();
+  const myRank = SITE_ROLES.indexOf((authUser?.userRole ?? "USER") as UserRole);
 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);

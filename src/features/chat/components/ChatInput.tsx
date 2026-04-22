@@ -6,6 +6,7 @@ type ChatInputProps = {
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   canSend: boolean;
   onSend: () => void;
+  onTyping?: () => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 };
 
@@ -14,6 +15,7 @@ export default function ChatInput({
   setMessage,
   canSend,
   onSend,
+  onTyping,
   textAreaRef,
 }: ChatInputProps) {
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function ChatInput({
         disabled={!canSend}
         className={styles.input}
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => { setMessage(e.target.value); onTyping?.(); }}
         onKeyDown={handleKeyDown}
         rows={1}
       />

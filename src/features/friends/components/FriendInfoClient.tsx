@@ -11,6 +11,7 @@ import img from "@/public/images/default_profile.png";
 import useLoading from "@/src/shared/hooks/useLoading";
 import formatTimestamp from "@/src/shared/lib/formatTimestamp";
 import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 type Friend = {
   username: string;
@@ -57,7 +58,7 @@ export default function FriendInfoClient() {
     });
   }, [subscribe, userId, router]);
 
-  if (loading) return <p className="loadingText">Loading...</p>;
+  if (loading) return <LoadingOverlay />;
   if (error)
     return (
       <p className="errorBox">

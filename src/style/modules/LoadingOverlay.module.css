@@ -1,0 +1,34 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(53, 55, 75, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 999;
+  animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mark {
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.72; }
+  50%       { transform: scale(1.1); opacity: 1;    }
+}
+
+.label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.68);
+  letter-spacing: 0.02em;
+}

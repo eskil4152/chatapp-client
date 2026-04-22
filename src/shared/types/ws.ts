@@ -113,6 +113,12 @@ export type WsInviteAccepted = {
   avatarUrl: string | null;
 };
 
+export type WsTyping = {
+  type: "TYPING";
+  username: string;
+  roomId: string;
+};
+
 export type WsInbound =
   | WsError
   | WsChat
@@ -126,7 +132,8 @@ export type WsInbound =
   | WsFriendRemoved
   | WsPendingInvitesSnapshot
   | WsInviteReceived
-  | WsInviteAccepted;
+  | WsInviteAccepted
+  | WsTyping;
 
 export type HistoryMessage = {
   id: string;

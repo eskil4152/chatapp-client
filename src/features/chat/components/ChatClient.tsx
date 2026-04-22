@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "@/src/style/modules/Chat.module.css";
 import useChatHistory from "@/src/features/chat/hooks/useChatHistory";
@@ -10,6 +10,8 @@ import ChatHeader from "@/src/features/chat/components/ChatHeader";
 import ChatStatus from "@/src/features/chat/components/ChatStatus";
 import ChatInput from "@/src/features/chat/components/ChatInput";
 import useChatRoomSession from "@/src/features/chat/hooks/useChatRoomSession";
+import { TypingIndicator, useTypingIndicator } from "@/src/features/chat/components/TypingIndicator";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 import Image from "next/image";
 import defaultProfile from "@/public/images/default_profile.png";
 
@@ -34,6 +36,16 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { connected, error: socketError, sendJson, subscribe } = useAppSocket();
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
+
+  const typingUser = useTypingIndicator(subscribe, roomId);
+
+  const lastTypingSentRef = useRef(0);
+  const handleTyping = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 2000) return;
+    lastTypingSentRef.current = now;
+    sendJson({ type: "TYPING", roomId });
+  }, [sendJson, roomId]);
 
   const { joined, roomName, encrypted, error, rateLimited, members } =
     useChatRoomSession({
@@ -99,6 +111,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
   return (
     <div className={styles.container}>
+      <LoadingOverlay visible={status === "CONNECTING" || status === "JOINING"} />
       <div className={`card ${styles.card}`}>
         <ChatHeader roomName={roomName} encrypted={encrypted} />
         <hr />
@@ -128,6 +141,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
               timestamp={m.timestamp}
             />
           ))}
+          {typingUser && <TypingIndicator userName={typingUser} />}
         </div>
 
         <hr />
@@ -137,6 +151,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
           setMessage={setMessage}
           canSend={canSend}
           onSend={handleSend}
+          onTyping={handleTyping}
           textAreaRef={textAreaRef}
         />
       </div>

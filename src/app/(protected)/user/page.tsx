@@ -11,6 +11,7 @@ import logout from "@/src/features/auth/api/logout";
 import { clearSession } from "@/src/shared/lib/clearSession";
 import deleteUser from "@/src/features/user/api/deleteUser";
 import ConfirmPopup from "@/src/shared/components/ConfirmPopup";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 type UserData = {
   username: string;
@@ -29,13 +30,7 @@ export default function UserInfo() {
   const { loading, error, response } = useUser();
 
   if (loading) {
-    return (
-      <div className="pageShellNarrow">
-        <div className="card centerText">
-          <p className="loadingText">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   if (response?.status === 401) {

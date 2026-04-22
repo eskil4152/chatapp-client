@@ -8,11 +8,11 @@ import BanList from "@/src/features/admin/components/BanList";
 
 export default function BanListPage() {
   const router = useRouter();
-  const { siteRole } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!isAtLeastSiteRole(siteRole, "MODERATOR")) router.replace("/rooms");
-  }, [siteRole, router]);
+    if (!isAtLeastSiteRole(user?.userRole, "MODERATOR")) router.replace("/rooms");
+  }, [user, router]);
 
   return (
     <div className="pageList">

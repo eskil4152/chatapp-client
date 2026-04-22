@@ -13,8 +13,8 @@ import { ElevatedUserDTO } from "@/src/features/admin/types";
 const PAGE_SIZES = [25, 50, 100] as const;
 
 export default function ElevatedUsersList() {
-  const { siteRole } = useAuth();
-  const myRank = SITE_ROLES.indexOf((siteRole ?? "USER") as UserRole);
+  const { user } = useAuth();
+  const myRank = SITE_ROLES.indexOf((user?.userRole ?? "USER") as UserRole);
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState<25 | 50 | 100>(25);

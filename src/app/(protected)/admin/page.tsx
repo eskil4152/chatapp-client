@@ -8,13 +8,13 @@ import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 
 export default function AdminPage() {
   const router = useRouter();
-  const { siteRole } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!isAtLeastSiteRole(siteRole, "MODERATOR")) {
+    if (!isAtLeastSiteRole(user?.userRole, "MODERATOR")) {
       router.replace("/rooms");
     }
-  }, [siteRole, router]);
+  }, [user, router]);
 
   return (
     <div className="pageList">

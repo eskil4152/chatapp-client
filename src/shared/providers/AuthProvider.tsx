@@ -7,22 +7,29 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { SiteRole } from "@/src/shared/lib/siteRole";
+import { UserRole } from "@/src/shared/lib/userRole";
 import fetchJSON from "@/src/shared/lib/fetchJSON";
 
+export type AuthDTO = {
+  userId: string;
+  username: string;
+  userRole: UserRole;
+};
+
 type AuthContextType = {
-  siteRole: SiteRole | undefined;
+  user: AuthDTO | undefined;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [siteRole, setSiteRole] = useState<SiteRole | undefined>(undefined);
+  const [user, setUser] = useState<AuthDTO | undefined>(undefined);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("siteRole") as SiteRole | null;
+    const stored = sessionStorage.getItem("auth");
+
     if (stored) {
-      setSiteRole(stored);
+      setUser(JSON.parse(stored));
       return;
     }
 
@@ -31,14 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     }).then((res) => {
-      if (res.status === 200 && typeof res.data === "string") {
-        sessionStorage.setItem("siteRole", res.data);
-        setSiteRole(res.data as SiteRole);
+      if (res.status === 200 && res.data) {
+        sessionStorage.setItem("auth", JSON.stringify(res.data));
+        setUser(res.data as AuthDTO);
       }
     });
   }, []);
 
-  const value = useMemo(() => ({ siteRole }), [siteRole]);
+  const value = useMemo(() => ({ user }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

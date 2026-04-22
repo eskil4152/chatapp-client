@@ -8,6 +8,7 @@ import getOutgoingInvites from "@/src/features/invites/api/getOutgoingInvites";
 import respondToInvite from "@/src/features/invites/api/respondToInvite";
 import IncomingInviteCard from "./IncomingInviteCard";
 import OutgoingInviteCard from "./OutgoingInviteCard";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 type Tab = "incoming" | "outgoing";
 
@@ -116,7 +117,7 @@ export default function InvitesPanel() {
                 ))
               )
             ) : loadingOutgoing ? (
-              <p className={styles.empty}>Loading...</p>
+              <LoadingOverlay />
             ) : outgoing.length === 0 ? (
               <p className={styles.empty}>No outgoing invites</p>
             ) : (

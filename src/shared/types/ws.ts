@@ -8,6 +8,7 @@ export type WsError = {
 
 export type WsChat = {
   type: "MESSAGE" | "JOIN" | "LEAVE";
+  userId: string;
   username: string;
   content: string;
   timestamp: string;
@@ -113,6 +114,21 @@ export type WsInviteAccepted = {
   avatarUrl: string | null;
 };
 
+export type WsTyping = {
+  type: "TYPING";
+  username: string;
+  userId: string;
+  roomId: string;
+};
+
+export type WsMessageNotification = {
+  type: "MESSAGE_NOTIFICATION";
+  roomId: string;
+  roomName: string;
+  username: string;
+  message: string;
+};
+
 export type WsInbound =
   | WsError
   | WsChat
@@ -126,7 +142,9 @@ export type WsInbound =
   | WsFriendRemoved
   | WsPendingInvitesSnapshot
   | WsInviteReceived
-  | WsInviteAccepted;
+  | WsInviteAccepted
+  | WsTyping
+  | WsMessageNotification;
 
 export type HistoryMessage = {
   id: string;

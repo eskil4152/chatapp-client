@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { isAtLeastSiteRole } from "@/src/shared/lib/siteRole";
+import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 
 export default function ElevatedNav() {
-  const { siteRole } = useAuth();
+  const { user } = useAuth();
 
-  const showSiteInfo = isAtLeastSiteRole(siteRole, "TRUSTED");
-  const showAdministrative = isAtLeastSiteRole(siteRole, "MODERATOR");
+  const showSiteInfo = isAtLeastSiteRole(user?.userRole, "TRUSTED");
+  const showAdministrative = isAtLeastSiteRole(user?.userRole, "MODERATOR");
 
   if (!showSiteInfo && !showAdministrative) return null;
 

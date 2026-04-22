@@ -33,6 +33,7 @@ export default function useChatHistory(roomId: string) {
 
         const mapped: WsChat[] = history.map((m) => ({
           type: "MESSAGE",
+          userId: m.userId,
           username: m.username,
           content: m.message ?? "",
           timestamp: m.timestamp,

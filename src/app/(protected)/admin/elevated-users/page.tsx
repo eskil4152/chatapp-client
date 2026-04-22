@@ -3,16 +3,16 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/shared/providers/AuthProvider";
-import { isAtLeastSiteRole } from "@/src/shared/lib/siteRole";
+import { isAtLeastSiteRole } from "@/src/shared/lib/userRole";
 import ElevatedUsersList from "@/src/features/admin/components/ElevatedUsersList";
 
 export default function ElevatedUsersPage() {
   const router = useRouter();
-  const { siteRole } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!isAtLeastSiteRole(siteRole, "MODERATOR")) router.replace("/rooms");
-  }, [siteRole, router]);
+    if (!isAtLeastSiteRole(user?.userRole, "MODERATOR")) router.replace("/rooms");
+  }, [user, router]);
 
   return (
     <div className="pageList">

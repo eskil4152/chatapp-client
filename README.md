@@ -2,8 +2,6 @@
 
 Web frontend for chatapp, a real-time chat application. Built with Next.js 16 and React 19, communicating with the chatapp server over HTTP REST and WebSocket.
 
-A companion iOS/macOS client also exists ([chatapp-swift](../chatapp-swift)).
-
 ---
 
 ## Table of contents
@@ -37,6 +35,8 @@ A companion iOS/macOS client also exists ([chatapp-swift](../chatapp-swift)).
 - **Open invites** — shareable invite codes with configurable usage limits, manageable from the room management page
 - **Encrypted rooms** — rooms can be flagged as encrypted at creation time
 - **Pagination** — chat history loads in pages of 25 with a "Load older messages" button
+- **Typing indicator** — animated three-dot bubble appears when another user is typing; auto-clears after 4 seconds of inactivity or immediately when the message is sent; guarded against cross-room bleed during room transitions
+- **Loading overlay** — full-screen animated overlay shown during data fetches on friends, rooms, chat, login, profile, and friend detail pages
 - **Offline handling** — automatic WebSocket reconnect with exponential back-off; dedicated server-offline page with auto-polling
 
 ---
@@ -127,30 +127,30 @@ src/
 
 These are accessible without a session and render without the app header or WebSocket connection.
 
-| Route | Description |
-|---|---|
-| `/` | Entry point. Checks session via `GET /api/auth`. Redirects to `/rooms` (authenticated), `/login` (not authenticated), or `/server-offline` (server unreachable). Shows "Waking server…" while the check is in flight. |
-| `/login` | Username + password form. On success redirects to `/rooms`. Shows "Credentials not found." on 401. |
-| `/register` | Registration form with inline validation (username ≥ 3 chars, password ≥ 8 chars) and a password strength bar. On success, redirects to `/` to re-check session. Shows "Username is taken." on 409. |
-| `/server-offline` | Shown when the server is unreachable. Polls `GET /api/auth` every 10 seconds. Has a manual "Try again" button. Redirects to `/` automatically once the server responds. |
+| Route             | Description                                                                                                                                                                                                           |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/`               | Entry point. Checks session via `GET /api/auth`. Redirects to `/rooms` (authenticated), `/login` (not authenticated), or `/server-offline` (server unreachable). Shows "Waking server…" while the check is in flight. |
+| `/login`          | Username + password form. On success redirects to `/rooms`. Shows "Credentials not found." on 401.                                                                                                                    |
+| `/register`       | Registration form with inline validation (username ≥ 3 chars, password ≥ 8 chars) and a password strength bar. On success, redirects to `/` to re-check session. Shows "Username is taken." on 409.                   |
+| `/server-offline` | Shown when the server is unreachable. Polls `GET /api/auth` every 10 seconds. Has a manual "Try again" button. Redirects to `/` automatically once the server responds.                                               |
 
 ### Protected routes
 
 All protected routes enforce authentication via 401 redirect — any API call returning 401 sends the user to `/login`.
 
-| Route | Description |
-|---|---|
-| `/rooms` | Room list in three sections: **Managed** (roles OWNER/ADMIN/MODERATOR), **Joined** (MEMBER), **Private** (DM rooms). Removes rooms in real time on `ROOM_DELETED` WS event. |
-| `/rooms/make` | Create a new room. Supports an encryption toggle. |
-| `/rooms/join` | Join a room using an open invite code. |
-| `/rooms/edit` | Rename a room or delete it. OWNER-only in practice. |
-| `/rooms/manage` | Full room management page. Sections are role-gated — see [Rooms](#rooms). |
-| `/chat` | Chat view. Query param `?id=`. Joins the room over WebSocket, loads paginated history, renders live messages, shows a member sidebar with avatars and online dots. |
-| `/friends` | Friends list. Shows online status from `FriendPresenceProvider`. Refreshes automatically on `INVITE_ACCEPTED`, `FRIEND_ADDED`, `FRIEND_REMOVED` WS events. |
-| `/friends/add` | Send a friend request by username. |
-| `/friends/info` | Friend profile view. Query param `?userId=`. Shows avatar (with online/offline dot), username, full name, bio, email, birthday, and "Friends since" date. Has "Remove friend" with a confirmation popup. Redirects to `/friends` automatically if a `FRIEND_REMOVED` WS event fires for that user. |
-| `/user` | Own profile. Edit bio, email, full name, avatar URL inline. Also log out and delete account (with confirmation). |
-| `/user/password` | Change password form (old + new password). |
+| Route            | Description                                                                                                                                                                                                                                                                                        |
+|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/rooms`         | Room list in three sections: **Managed** (roles OWNER/ADMIN/MODERATOR), **Joined** (MEMBER), **Private** (DM rooms). Removes rooms in real time on `ROOM_DELETED` WS event.                                                                                                                        |
+| `/rooms/make`    | Create a new room. Supports an encryption toggle.                                                                                                                                                                                                                                                  |
+| `/rooms/join`    | Join a room using an open invite code.                                                                                                                                                                                                                                                             |
+| `/rooms/edit`    | Rename a room or delete it. OWNER-only in practice.                                                                                                                                                                                                                                                |
+| `/rooms/manage`  | Full room management page. Sections are role-gated — see [Rooms](#rooms).                                                                                                                                                                                                                          |
+| `/chat`          | Chat view. Query param `?id=`. Joins the room over WebSocket, loads paginated history, renders live messages, shows a typing indicator when another member is typing, and shows a member sidebar with avatars and online dots. |
+| `/friends`       | Friends list. Shows online status from `FriendPresenceProvider`. Refreshes automatically on `INVITE_ACCEPTED`, `FRIEND_ADDED`, `FRIEND_REMOVED` WS events.                                                                                                                                         |
+| `/friends/add`   | Send a friend request by username.                                                                                                                                                                                                                                                                 |
+| `/friends/info`  | Friend profile view. Query param `?userId=`. Shows avatar (with online/offline dot), username, full name, bio, email, birthday, and "Friends since" date. Has "Remove friend" with a confirmation popup. Redirects to `/friends` automatically if a `FRIEND_REMOVED` WS event fires for that user. |
+| `/user`          | Own profile. Edit bio, email, full name, avatar URL inline. Also log out and delete account (with confirmation).                                                                                                                                                                                   |
+| `/user/password` | Change password form (old + new password).                                                                                                                                                                                                                                                         |
 
 ---
 
@@ -160,36 +160,38 @@ All WebSocket traffic goes through a single persistent connection managed by `Ap
 
 ### Outbound (client → server)
 
-| Type | When sent | Payload |
-|---|---|---|
-| `PING` | Every 25 seconds (keepalive) | `{ type: "PING" }` |
-| `JOIN` | On chat page mount when connected | `{ type: "JOIN", roomId }` |
-| `LEAVE` | On chat page unmount | `{ type: "LEAVE", roomId }` |
-| `MESSAGE` | On message submit | `{ type: "MESSAGE", roomId, message: string }` |
+| Type      | When sent                         | Payload                                        |
+|-----------|-----------------------------------|------------------------------------------------|
+| `PING`    | Every 25 seconds (keepalive)      | `{ type: "PING" }`                             |
+| `JOIN`    | On chat page mount when connected | `{ type: "JOIN", roomId }`                     |
+| `LEAVE`   | On chat page unmount              | `{ type: "LEAVE", roomId }`                    |
+| `MESSAGE` | On message submit                 | `{ type: "MESSAGE", roomId, message: string }` |
+| `TYPING`  | On text input change, throttled to once per 2 seconds | `{ type: "TYPING", roomId }` |
 
 ### Inbound (server → client)
 
-| Type | Handler | Effect |
-|---|---|---|
-| `ERROR` (401) | `AppSocketProvider` | Redirect to `/login` |
-| `ERROR` (403) | `AppSocketProvider` | Redirect to `/rooms` |
-| `ERROR` (429) | `useChatRoomSession` | Disable send for 3s, show rate-limit message |
-| `ERROR` (other) | `useChatRoomSession` | Show `"code: message"` in chat status |
-| `MESSAGE` / `JOIN` / `LEAVE` | `useChatRoomSession` | Append message to chat |
-| `ROOM_JOINED` | `useChatRoomSession` | Set room name, role, members, encryption flag; load initial message history |
-| `ROOM_PRESENCE` | `useChatRoomSession` | Update a member's online status in the sidebar |
-| `ROOM_ACTION` (KICK/BAN) | `useChatRoomSession` | Redirect to `/rooms` |
-| `ROOM_DELETED` | `ChatClient` | Redirect to `/rooms` if current room |
-| `ROOM_DELETED` | `/rooms` page | Remove the room from the list in-place |
-| `FRIEND_SNAPSHOT` | `FriendPresenceProvider` | Replace entire presence map |
-| `FRIEND_PRESENCE` | `FriendPresenceProvider` | Update a single friend's online status |
-| `FRIEND_ADDED` | `FriendPresenceProvider` | Insert new friend into presence map |
-| `FRIEND_REMOVED` | `FriendPresenceProvider` | Remove friend from presence map |
-| `FRIEND_ADDED` / `FRIEND_REMOVED` / `INVITE_ACCEPTED` | `/friends` page | Reload friends list |
-| `FRIEND_REMOVED` | `FriendInfoClient` | Redirect to `/friends` if viewing that friend's profile |
-| `PENDING_INVITES` | `InviteProvider` | Replace full pending invite list (sent by server on connect) |
-| `INVITE_RECEIVED` | `InviteProvider` | Show incoming invite toast for 4 seconds |
-| `INVITE_ACCEPTED` | `InviteProvider` | Show accepted confirmation toast for 4 seconds |
+| Type                                                  | Handler                  | Effect                                                                      |
+|-------------------------------------------------------|--------------------------|-----------------------------------------------------------------------------|
+| `ERROR` (401)                                         | `AppSocketProvider`      | Redirect to `/login`                                                        |
+| `ERROR` (403)                                         | `AppSocketProvider`      | Redirect to `/rooms`                                                        |
+| `ERROR` (429)                                         | `useChatRoomSession`     | Disable send for 3s, show rate-limit message                                |
+| `ERROR` (other)                                       | `useChatRoomSession`     | Show `"code: message"` in chat status                                       |
+| `MESSAGE` / `JOIN` / `LEAVE`                          | `useChatRoomSession`     | Append message to chat                                                      |
+| `ROOM_JOINED`                                         | `useChatRoomSession`     | Set room name, role, members, encryption flag; load initial message history |
+| `ROOM_PRESENCE`                                       | `useChatRoomSession`     | Update a member's online status in the sidebar                              |
+| `ROOM_ACTION` (KICK/BAN)                              | `useChatRoomSession`     | Redirect to `/rooms`                                                        |
+| `ROOM_DELETED`                                        | `ChatClient`             | Redirect to `/rooms` if current room                                        |
+| `ROOM_DELETED`                                        | `/rooms` page            | Remove the room from the list in-place                                      |
+| `FRIEND_SNAPSHOT`                                     | `FriendPresenceProvider` | Replace entire presence map                                                 |
+| `FRIEND_PRESENCE`                                     | `FriendPresenceProvider` | Update a single friend's online status                                      |
+| `FRIEND_ADDED`                                        | `FriendPresenceProvider` | Insert new friend into presence map                                         |
+| `FRIEND_REMOVED`                                      | `FriendPresenceProvider` | Remove friend from presence map                                             |
+| `FRIEND_ADDED` / `FRIEND_REMOVED` / `INVITE_ACCEPTED` | `/friends` page          | Reload friends list                                                         |
+| `FRIEND_REMOVED`                                      | `FriendInfoClient`       | Redirect to `/friends` if viewing that friend's profile                     |
+| `PENDING_INVITES`                                     | `InviteProvider`         | Replace full pending invite list (sent by server on connect)                |
+| `INVITE_RECEIVED`                                     | `InviteProvider`         | Show incoming invite toast for 4 seconds                                    |
+| `INVITE_ACCEPTED`                                     | `InviteProvider`         | Show accepted confirmation toast for 4 seconds                              |
+| `TYPING`                                              | `useTypingIndicator`     | Show typing indicator bubble in chat; filtered by `roomId` to prevent cross-room bleed |
 
 ---
 
@@ -248,23 +250,23 @@ There is no Next.js middleware. Auth protection relies entirely on API responses
 
 `MEMBER` < `MODERATOR` < `ADMIN` < `OWNER`
 
-| Capability | MEMBER | MODERATOR | ADMIN | OWNER |
-|---|---|---|---|---|
-| Chat | yes | yes | yes | yes |
-| Leave room | yes | yes | — | — |
-| Access manage page | yes (view only) | yes | yes | yes |
-| Invite users by username | — | yes | yes | yes |
-| View member list | — | yes | yes | yes |
-| Kick members | — | yes* | yes* | yes |
-| Ban members | — | — | yes* | yes |
-| View/create open invites | — | — | yes | yes |
-| View ban list / Unban | — | — | yes | yes |
-| Rename room | — | — | yes | yes |
-| Promote Member → Moderator | — | — | yes | yes |
-| Promote Moderator → Admin | — | — | — | yes |
-| Demote Admin → Moderator | — | — | — | yes |
-| Demote Moderator → Member | — | — | yes | yes |
-| Delete room | — | — | — | yes |
+| Capability                 | MEMBER          | MODERATOR | ADMIN | OWNER |
+|----------------------------|-----------------|-----------|-------|-------|
+| Chat                       | yes             | yes       | yes   | yes   |
+| Leave room                 | yes             | yes       | —     | —     |
+| Access manage page         | yes (view only) | yes       | yes   | yes   |
+| Invite users by username   | —               | yes       | yes   | yes   |
+| View member list           | —               | yes       | yes   | yes   |
+| Kick members               | —               | yes*      | yes*  | yes   |
+| Ban members                | —               | —         | yes*  | yes   |
+| View/create open invites   | —               | —         | yes   | yes   |
+| View ban list / Unban      | —               | —         | yes   | yes   |
+| Rename room                | —               | —         | yes   | yes   |
+| Promote Member → Moderator | —               | —         | yes   | yes   |
+| Promote Moderator → Admin  | —               | —         | —     | yes   |
+| Demote Admin → Moderator   | —               | —         | —     | yes   |
+| Demote Moderator → Member  | —               | —         | yes   | yes   |
+| Delete room                | —               | —         | —     | yes   |
 
 \* Cannot target a member whose role is equal or higher.
 
@@ -278,11 +280,11 @@ Open invites are room-join links that anyone can use without being targeted spec
 
 ### Invite types
 
-| Type | Sent via | Description |
-|---|---|---|
-| `FRIEND_REQUEST` | `/friends/add` | Sent to a specific username. Becomes a friendship on acceptance. |
-| `ROOM_INVITE` | Room manage page | Sent to a specific username by MODERATOR+. Adds the user to the room on acceptance. |
-| `OPEN_ROOM_INVITE` | Room manage page, redeemed via `/rooms/join` | Not targeted. Redeemed by entering the invite ID. No decline option. |
+| Type               | Sent via                                     | Description                                                                         |
+|--------------------|----------------------------------------------|-------------------------------------------------------------------------------------|
+| `FRIEND_REQUEST`   | `/friends/add`                               | Sent to a specific username. Becomes a friendship on acceptance.                    |
+| `ROOM_INVITE`      | Room manage page                             | Sent to a specific username by MODERATOR+. Adds the user to the room on acceptance. |
+| `OPEN_ROOM_INVITE` | Room manage page, redeemed via `/rooms/join` | Not targeted. Redeemed by entering the invite ID. No decline option.                |
 
 ### Invite flow
 
@@ -303,24 +305,28 @@ The `OnlineFriendsRail` (left sidebar column on all protected pages) shows circu
 
 ## Encryption
 
-Rooms can be created with encryption enabled. The `encrypted` flag is shown in the chat header.
+Rooms can be created with encryption enabled, indicated by a flag in the chat header.
 
-History messages carry the fields `nonce`, `ciphertext`, and `keyVersion` alongside `message`. The client currently renders `message` (the plaintext field) and passes through the encrypted fields without decryption — encrypted message content would appear as an empty string in the chat UI. This indicates either server-side decryption before delivery, or that client-side decryption is not yet implemented.
+Encryption is applied **server-side at rest only** — messages are stored encrypted in the database using AES-256-GCM with AAD binding each message to its room, user, and message identifier. The server decrypts messages before delivering them to clients, so the web client receives and renders plaintext.
+
+This is **not end-to-end encryption.** The server has access to all message content in plaintext at delivery time. Encryption at rest protects message content from database-level exposure (backups, unauthorized DB access), not from the server itself.
+
+The server decrypts messages before delivering them to the client. History responses contain only the plaintext `message` field — `nonce`, `ciphertext`, and `keyVersion` are not exposed to the client.
 
 ---
 
 ## Error handling
 
-| Scenario | Behaviour |
-|---|---|
-| REST 401 | Redirect to `/login` |
-| WS ERROR code 401 | Redirect to `/login` (global, `AppSocketProvider`) |
-| REST 403 | Inline error message on the page |
-| WS ERROR code 403 | Redirect to `/rooms` (global, `AppSocketProvider`) |
-| WS ERROR code 429 | Disable chat input for 3 seconds, show "You are sending messages too fast." |
-| Server unreachable at startup | Redirect to `/server-offline` (polling + retry button) |
-| WS disconnected | Exponential back-off reconnect (2s → 4s → 8s → … → 30s cap) |
-| Destructive actions | `ConfirmPopup` modal required before any kick, ban, remove, or delete |
+| Scenario                      | Behaviour                                                                   |
+|-------------------------------|-----------------------------------------------------------------------------|
+| REST 401                      | Redirect to `/login`                                                        |
+| WS ERROR code 401             | Redirect to `/login` (global, `AppSocketProvider`)                          |
+| REST 403                      | Inline error message on the page                                            |
+| WS ERROR code 403             | Redirect to `/rooms` (global, `AppSocketProvider`)                          |
+| WS ERROR code 429             | Disable chat input for 3 seconds, show "You are sending messages too fast." |
+| Server unreachable at startup | Redirect to `/server-offline` (polling + retry button)                      |
+| WS disconnected               | Exponential back-off reconnect (2s → 4s → 8s → … → 30s cap)                 |
+| Destructive actions           | `ConfirmPopup` modal required before any kick, ban, remove, or delete       |
 
 ---
 
@@ -330,35 +336,35 @@ The app uses a single dark colour theme defined as CSS custom properties in `glo
 
 ### Design tokens
 
-| Token | Value | Used for |
-|---|---|---|
-| `--bg-main` | `#50727B` | Page background |
-| `--bg-card` | `#344955` | Cards, header |
-| `--bg-dark` | `#35374B` | Left rail, action buttons |
-| `--bg-input` | `#5F8691` | Inputs, secondary button |
-| `--accent` | `#78AC83` | Primary button, badge, focus ring, active states |
-| `--text-main` | `#ffffff` | Body text |
-| `--text-soft` | `rgba(255,255,255,0.82)` | Secondary text |
-| `--text-muted` | `rgba(255,255,255,0.68)` | Timestamps, labels, metadata |
-| `--border-soft` | `rgba(255,255,255,0.12)` | Dividers |
-| `--error-bg` | `rgba(158,61,61,0.22)` | Error box background |
-| `--error-text` | `#ffd2d2` | Error text |
-| `--status-online` | `#22c55e` | Online presence dot |
-| `--radius-card` | `14px` | Card border-radius |
-| `--radius-input` | `10px` | Input border-radius |
-| `--radius-pill` | `999px` | Pill buttons |
+| Token             | Value                    | Used for                                         |
+|-------------------|--------------------------|--------------------------------------------------|
+| `--bg-main`       | `#50727B`                | Page background                                  |
+| `--bg-card`       | `#344955`                | Cards, header                                    |
+| `--bg-dark`       | `#35374B`                | Left rail, action buttons                        |
+| `--bg-input`      | `#5F8691`                | Inputs, secondary button                         |
+| `--accent`        | `#78AC83`                | Primary button, badge, focus ring, active states |
+| `--text-main`     | `#ffffff`                | Body text                                        |
+| `--text-soft`     | `rgba(255,255,255,0.82)` | Secondary text                                   |
+| `--text-muted`    | `rgba(255,255,255,0.68)` | Timestamps, labels, metadata                     |
+| `--border-soft`   | `rgba(255,255,255,0.12)` | Dividers                                         |
+| `--error-bg`      | `rgba(158,61,61,0.22)`   | Error box background                             |
+| `--error-text`    | `#ffd2d2`                | Error text                                       |
+| `--status-online` | `#22c55e`                | Online presence dot                              |
+| `--radius-card`   | `14px`                   | Card border-radius                               |
+| `--radius-input`  | `10px`                   | Input border-radius                              |
+| `--radius-pill`   | `999px`                  | Pill buttons                                     |
 
 ### Button variants
 
-| Class | Appearance | Use |
-|---|---|---|
-| `.primaryButton` | Green accent, pill | Primary actions |
-| `.secondaryButton` | Teal, pill | Secondary/cancel |
-| `.dangerButton` | Dark red, pill | Destructive actions |
-| `.textButton` | Transparent | Inline links |
-| `.actionButton` | Dark bg, rounded rect | Row-level actions (kick, ban, leave) |
-| `.buttonLoading` | Reduced opacity + CSS spinner | Async in-progress state |
-| `.buttonDisabled` | 50% opacity | Unavailable actions |
+| Class              | Appearance                    | Use                                  |
+|--------------------|-------------------------------|--------------------------------------|
+| `.primaryButton`   | Green accent, pill            | Primary actions                      |
+| `.secondaryButton` | Teal, pill                    | Secondary/cancel                     |
+| `.dangerButton`    | Dark red, pill                | Destructive actions                  |
+| `.textButton`      | Transparent                   | Inline links                         |
+| `.actionButton`    | Dark bg, rounded rect         | Row-level actions (kick, ban, leave) |
+| `.buttonLoading`   | Reduced opacity + CSS spinner | Async in-progress state              |
+| `.buttonDisabled`  | 50% opacity                   | Unavailable actions                  |
 
 ---
 
@@ -376,6 +382,14 @@ Manages paginated chat history (page size 25). Handles initial load and "load ol
 
 Manages the full WS lifecycle for a chat room — sending JOIN on mount, LEAVE on unmount, and handling all room-specific inbound events (`ROOM_JOINED`, `ROOM_ACTION`, `ROOM_PRESENCE`, chat messages). Also manages rate-limit state.
 
+### `useTypingIndicator` (`src/features/chat/components/TypingIndicator.tsx`)
+
+Subscribes to `TYPING` WS events for the current room and returns the username of whoever is currently typing (or `null`). Auto-clears after 4 seconds of inactivity, clears immediately on `MESSAGE` from the same user, and filters by `roomId` to prevent stale events from a previous room showing up during transitions. Throttled on the send side to once per 2 seconds.
+
+### `LoadingOverlay` (`src/features/chat/components/LoadingOverlay.tsx`)
+
+Full-screen backdrop overlay with an animated app logo. Accepts a `visible` prop. Used on friends, rooms, chat, login, profile, and friend detail pages to cover the UI while data is loading.
+
 ### `fetchJSON` (`src/shared/lib/fetchJSON.ts`)
 
 Thin fetch wrapper that always sets `Content-Type: application/json` and returns `{ status, data }` without throwing. Callers branch on status codes directly.
@@ -390,34 +404,34 @@ Shows `HH:MM` for today's messages, `Mon DD, HH:MM` for older ones. Used in chat
 
 All requests include `credentials: "include"` for cookie-based auth.
 
-| Method | Path | Feature |
-|---|---|---|
-| GET | `/api/auth` | Session check |
-| POST | `/api/login` | Login |
-| POST | `/api/logout` | Logout |
-| POST | `/api/register` | Register |
-| GET | `/api/user` | Get own profile |
-| PUT | `/api/user/edit` | Update profile |
-| PATCH | `/api/user/edit/password` | Change password |
-| DELETE | `/api/user/delete` | Delete account |
-| GET | `/api/rooms` | List joined rooms |
-| POST | `/api/rooms/make` | Create room |
-| DELETE | `/api/rooms/leave` | Leave room |
-| PUT | `/api/rooms/edit` | Rename room |
-| DELETE | `/api/rooms/delete` | Delete room |
-| POST | `/api/rooms/action` | Kick or ban a member |
-| POST | `/api/rooms/changeRole` | Promote or demote a member |
-| DELETE | `/api/rooms/unban` | Unban a user |
-| GET | `/api/rooms/:roomId/members` | List room members |
-| GET | `/api/rooms/:roomId/bans` | List banned users |
-| POST | `/api/rooms/dm` | Open or get existing DM room |
-| GET | `/api/chats/:roomId` | Paginated message history (`?page=N&size=N`) |
-| GET | `/api/friends` | List friends |
-| DELETE | `/api/friends/remove` | Remove a friend |
-| GET | `/api/friends/:userId` | Get a friend's profile |
-| GET | `/api/invites/pending` | List pending invites |
-| GET | `/api/invites/outgoing` | List outgoing invites |
-| POST | `/api/invites/friend` | Send a friend request |
-| POST | `/api/invites/room` | Send a room invite |
-| POST | `/api/invites/open` | Create an open room invite |
-| POST | `/api/invites/respond` | Accept or decline an invite |
+| Method | Path                         | Feature                                      |
+|--------|------------------------------|----------------------------------------------|
+| GET    | `/api/auth`                  | Session check                                |
+| POST   | `/api/login`                 | Login                                        |
+| POST   | `/api/logout`                | Logout                                       |
+| POST   | `/api/register`              | Register                                     |
+| GET    | `/api/user`                  | Get own profile                              |
+| PUT    | `/api/user/edit`             | Update profile                               |
+| PATCH  | `/api/user/edit/password`    | Change password                              |
+| DELETE | `/api/user/delete`           | Delete account                               |
+| GET    | `/api/rooms`                 | List joined rooms                            |
+| POST   | `/api/rooms/make`            | Create room                                  |
+| DELETE | `/api/rooms/leave`           | Leave room                                   |
+| PUT    | `/api/rooms/edit`            | Rename room                                  |
+| DELETE | `/api/rooms/delete`          | Delete room                                  |
+| POST   | `/api/rooms/action`          | Kick or ban a member                         |
+| POST   | `/api/rooms/changeRole`      | Promote or demote a member                   |
+| DELETE | `/api/rooms/unban`           | Unban a user                                 |
+| GET    | `/api/rooms/:roomId/members` | List room members                            |
+| GET    | `/api/rooms/:roomId/bans`    | List banned users                            |
+| POST   | `/api/rooms/dm`              | Open or get existing DM room                 |
+| GET    | `/api/chats/:roomId`         | Paginated message history (`?page=N&size=N`) |
+| GET    | `/api/friends`               | List friends                                 |
+| DELETE | `/api/friends/remove`        | Remove a friend                              |
+| GET    | `/api/friends/:userId`       | Get a friend's profile                       |
+| GET    | `/api/invites/pending`       | List pending invites                         |
+| GET    | `/api/invites/outgoing`      | List outgoing invites                        |
+| POST   | `/api/invites/friend`        | Send a friend request                        |
+| POST   | `/api/invites/room`          | Send a room invite                           |
+| POST   | `/api/invites/open`          | Create an open room invite                   |
+| POST   | `/api/invites/respond`       | Accept or decline an invite                  |

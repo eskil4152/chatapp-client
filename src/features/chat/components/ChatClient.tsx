@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "@/src/style/modules/Chat.module.css";
 import useChatHistory from "@/src/features/chat/hooks/useChatHistory";
@@ -10,8 +16,14 @@ import ChatHeader from "@/src/features/chat/components/ChatHeader";
 import ChatStatus from "@/src/features/chat/components/ChatStatus";
 import ChatInput from "@/src/features/chat/components/ChatInput";
 import useChatRoomSession from "@/src/features/chat/hooks/useChatRoomSession";
+import {
+  TypingIndicator,
+  useTypingIndicator,
+} from "@/src/features/chat/components/TypingIndicator";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 import Image from "next/image";
 import defaultProfile from "@/public/images/default_profile.png";
+import { useAuth } from "@/src/shared/providers/AuthProvider";
 
 export default function ChatClient() {
   const searchParams = useSearchParams();
@@ -27,6 +39,8 @@ export default function ChatClient() {
 
 function ChatClientInner({ roomId }: { roomId: string }) {
   const router = useRouter();
+  const { user } = useAuth();
+
   const [message, setMessage] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -34,6 +48,27 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { connected, error: socketError, sendJson, subscribe } = useAppSocket();
   const { messages, setMessages, page, hasMore, loadingOlder, loadMessages } =
     useChatHistory(roomId);
+
+  const typingEvent = useTypingIndicator(subscribe, roomId);
+
+  const typingUser =
+    typingEvent?.userId && user?.userId === typingEvent.userId
+      ? null
+      : typingEvent?.username;
+
+  const lastTypingSentRef = useRef(0);
+
+  const handleTyping = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 2000) return;
+
+    lastTypingSentRef.current = now;
+
+    sendJson({
+      type: "TYPING",
+      roomId,
+    });
+  }, [sendJson, roomId]);
 
   const { joined, roomName, encrypted, error, rateLimited, members } =
     useChatRoomSession({
@@ -59,7 +94,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     const el = messagesRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages]);
+  }, [messages, typingUser]);
 
   const status: "CONNECTING" | "JOINING" | "READY" | "ERROR" = error
     ? "ERROR"
@@ -97,8 +132,16 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     );
   }
 
+  if (!user) {
+    return <LoadingOverlay visible />;
+  }
+
   return (
     <div className={styles.container}>
+      <LoadingOverlay
+        visible={status === "CONNECTING" || status === "JOINING"}
+      />
+
       <div className={`card ${styles.card}`}>
         <ChatHeader roomName={roomName} encrypted={encrypted} />
         <hr />
@@ -121,13 +164,17 @@ function ChatClientInner({ roomId }: { roomId: string }) {
         <div className={styles.messages} ref={messagesRef}>
           {messages.map((m) => (
             <ChatMessageCard
-              key={`${m.timestamp}-${m.username}`}
+              key={`${m.timestamp}-${m.userId}`}
               type={m.type}
               username={m.username}
               content={m.content}
               timestamp={m.timestamp}
+              userId={m.userId}
+              currentUserId={user?.userId}
             />
           ))}
+
+          {typingUser && <TypingIndicator userName={typingUser} />}
         </div>
 
         <hr />
@@ -137,6 +184,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
           setMessage={setMessage}
           canSend={canSend}
           onSend={handleSend}
+          onTyping={handleTyping}
           textAreaRef={textAreaRef}
         />
       </div>
@@ -146,25 +194,26 @@ function ChatClientInner({ roomId }: { roomId: string }) {
           Members — {members.filter((u) => u.online).length} / {members.length}{" "}
           online
         </p>
+
         <ul className={styles.onlineList}>
-          {members.map((user) => (
-            <li key={user.id} className={styles.onlineUser}>
+          {members.map((member) => (
+            <li key={member.id} className={styles.onlineUser}>
               <div className={styles.memberAvatarBox}>
                 <Image
-                  src={user.avatar || defaultProfile}
-                  alt={`${user.username} avatar`}
+                  src={member.avatar || defaultProfile}
+                  alt={`${member.username} avatar`}
                   width={34}
                   height={34}
                   className={styles.memberAvatar}
                 />
                 <span
                   className={`${styles.memberStatusDot} ${
-                    user.online ? styles.memberOnline : styles.memberOffline
+                    member.online ? styles.memberOnline : styles.memberOffline
                   }`}
                 />
               </div>
 
-              <span className={styles.memberName}>{user.username}</span>
+              <span className={styles.memberName}>{member.username}</span>
             </li>
           ))}
         </ul>

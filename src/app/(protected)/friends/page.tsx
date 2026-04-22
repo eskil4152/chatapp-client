@@ -8,6 +8,7 @@ import FriendCard from "@/src/features/friends/components/FriendCard";
 import { useFriendPresence } from "@/src/shared/providers/FriendPresenceProvider";
 import { FriendType } from "@/src/features/friends/types";
 import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 export default function Friends() {
   const router = useRouter();
@@ -39,9 +40,9 @@ export default function Friends() {
 
   return (
     <div className="pageList">
+      <LoadingOverlay visible={loading} />
       <h2 className="sectionTitle">Friends</h2>
 
-      {loading && <p className="empty">Loading...</p>}
       {!loading && !!error && (
         <p className="errorBox">Failed to load friends</p>
       )}

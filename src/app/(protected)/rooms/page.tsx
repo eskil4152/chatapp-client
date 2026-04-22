@@ -9,6 +9,7 @@ import RoomCard from "@/src/features/rooms/components/RoomCard";
 import FriendRoomCard from "@/src/features/rooms/components/FriendRoomCard";
 import { RoomType } from "@/src/features/rooms/types";
 import { useAppSocket } from "@/src/shared/providers/AppSocketProvider";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 export default function Rooms() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function Rooms() {
 
   return (
     <div className="pageList">
-      {loading && <p className="empty">Loading...</p>}
+      <LoadingOverlay visible={loading} />
       {!loading && !!error && <p className="errorBox">Failed to load rooms</p>}
       {!loading && !error && rooms.length === 0 && (
         <p className="empty">No rooms :(</p>

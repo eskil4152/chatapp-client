@@ -6,16 +6,16 @@ export const SITE_ROLES = [
   "SUPERUSER",
 ] as const;
 
-export type SiteRole = (typeof SITE_ROLES)[number];
+export type UserRole = (typeof SITE_ROLES)[number];
 
 function siteRoleRank(role: string): number {
-  const idx = SITE_ROLES.indexOf(role as SiteRole);
+  const idx = SITE_ROLES.indexOf(role as UserRole);
   return idx === -1 ? 0 : idx;
 }
 
 export function isAtLeastSiteRole(
   userRole: string | undefined,
-  required: SiteRole
+  required: UserRole,
 ): boolean {
   if (!userRole) return false;
   return siteRoleRank(userRole) >= siteRoleRank(required);

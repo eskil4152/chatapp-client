@@ -4,6 +4,7 @@ import Link from "next/link";
 import login from "@/src/features/auth/api/login";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import LoadingOverlay from "@/src/features/chat/components/LoadingOverlay";
 
 export default function Page() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function Page() {
 
   return (
     <div className="pageShellNarrow">
+      <LoadingOverlay visible={loading} />
       <div className="card">
         <h1 className="pageTitle">Log In</h1>
 

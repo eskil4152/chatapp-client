@@ -7,13 +7,16 @@ type ChatHeaderProps = {
 
 export default function ChatHeader({ roomName, encrypted }: ChatHeaderProps) {
   return (
-    <h2 className={styles.title}>
-      {roomName || "Room"}{" "}
-      {roomName && (
-        <span className={styles.roomMeta}>
-          {encrypted ? "Encrypted" : "Not encrypted"}
-        </span>
-      )}
-    </h2>
+    <div className={styles.header}>
+      <div className={styles.headerSpacer} />
+      <h2 className={styles.title}>{roomName || "Room"}</h2>
+      <div className={styles.headerRight}>
+        {roomName && (
+          <span className={styles.roomMeta}>
+            {encrypted ? "Encrypted" : "Not encrypted"}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }

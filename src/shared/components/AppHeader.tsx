@@ -12,7 +12,7 @@ export default function AppHeader() {
         <Link href="/" className="logo" style={{ padding: 0, lineHeight: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/ping-logo-lockup-white.svg"
+            src="/images/logo.png"
             alt="Ping"
             style={{ height: "34px", width: "auto", display: "block" }}
           />

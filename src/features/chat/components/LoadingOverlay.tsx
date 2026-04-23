@@ -1,34 +1,30 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import styles from "@/src/style/modules/LoadingOverlay.module.css";
 
-function PingMark({ size = 56 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 52 52"
-      fill="none"
-      className={styles.mark}
-    >
-      <rect width="52" height="52" rx="14" fill="#78AC83" />
-      <path
-        d="M 15 43 L 15 14 L 27 14 C 34 14 38 18 38 24 C 38 30 34 34 27 34 L 15 34"
-        stroke="white"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+export default function LoadingOverlay({
+  visible = true,
+}: {
+  visible?: boolean;
+}) {
+  const [dots, setDots] = useState("");
 
-export default function LoadingOverlay({ visible = true }: { visible?: boolean }) {
+  useEffect(() => {
+    if (!visible) return;
+    const id = setInterval(() => {
+      setDots((d) => (d.length >= 3 ? "" : d + "."));
+    }, 400);
+    return () => clearInterval(id);
+  }, [visible]);
+
   if (!visible) return null;
 
   return (
     <div className={styles.overlay}>
-      <PingMark size={56} />
-      <span className={styles.label}>Loading...</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/images/logo.png" alt="Ping" className={styles.mark} />
+      <span className={styles.label}>Loading{dots}</span>
     </div>
   );
 }

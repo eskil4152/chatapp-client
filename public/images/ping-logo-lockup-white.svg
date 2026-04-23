@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 181 64" width="181" height="64">
-  <rect width="64" height="64" rx="15" fill="#78AC83"></rect>
-  <path d="M 15 56 L 15 12 L 36 12 C 52 12 52 44 36 44 L 15 44" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
-  <text x="72" y="52" font-family="Outfit, sans-serif" font-weight="800" font-size="52" letter-spacing="-2" fill="white">Ping</text>
-</svg>

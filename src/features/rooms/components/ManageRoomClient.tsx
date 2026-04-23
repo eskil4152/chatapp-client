@@ -385,47 +385,45 @@ export default function ManageRoomClient() {
           ) : (
             <div className="itemList">
               {members.map((member) => (
-                <div key={member.id} className="itemRow">
-                  <div className="interactiveCard">
-                    <div className="cardPrimary">
-                      <div className="itemName">{member.username}</div>
-                    </div>
-                    <div className="cardSecondary">
-                      <span className="itemMeta">{member.role}</span>
-                    </div>
+                <div key={member.id} className="card" style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="itemName">{member.username}</div>
+                    <span className="itemMeta">{member.role}</span>
                   </div>
-                  {isAtLeast("MODERATOR") && member.role !== "OWNER" && (
-                    <button
-                      className="actionButton"
-                      onClick={() => setPendingAction({ userId: member.id, username: member.username, action: "KICK" })}
-                    >
-                      Kick
-                    </button>
-                  )}
-                  {isAtLeast("ADMIN") && member.role !== "OWNER" && (
-                    <button
-                      className="actionButton"
-                      onClick={() => setPendingAction({ userId: member.id, username: member.username, action: "BAN" })}
-                    >
-                      Ban
-                    </button>
-                  )}
-                  {isAtLeast("ADMIN") && ROLE_UP[member.role] && (member.role !== "MODERATOR" || isAtLeast("OWNER")) && (
-                    <button
-                      className="actionButton"
-                      onClick={() => setPendingRoleChange({ userId: member.id, username: member.username, currentRole: member.role, action: "PROMOTE" })}
-                    >
-                      Promote
-                    </button>
-                  )}
-                  {isAtLeast("ADMIN") && ROLE_DOWN[member.role] && (member.role !== "ADMIN" || isAtLeast("OWNER")) && (
-                    <button
-                      className="actionButton"
-                      onClick={() => setPendingRoleChange({ userId: member.id, username: member.username, currentRole: member.role, action: "DEMOTE" })}
-                    >
-                      Demote
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {isAtLeast("MODERATOR") && member.role !== "OWNER" && (
+                      <button
+                        className="actionButton"
+                        onClick={() => setPendingAction({ userId: member.id, username: member.username, action: "KICK" })}
+                      >
+                        Kick
+                      </button>
+                    )}
+                    {isAtLeast("ADMIN") && member.role !== "OWNER" && (
+                      <button
+                        className="actionButton"
+                        onClick={() => setPendingAction({ userId: member.id, username: member.username, action: "BAN" })}
+                      >
+                        Ban
+                      </button>
+                    )}
+                    {isAtLeast("ADMIN") && ROLE_UP[member.role] && (member.role !== "MODERATOR" || isAtLeast("OWNER")) && (
+                      <button
+                        className="actionButton"
+                        onClick={() => setPendingRoleChange({ userId: member.id, username: member.username, currentRole: member.role, action: "PROMOTE" })}
+                      >
+                        Promote
+                      </button>
+                    )}
+                    {isAtLeast("ADMIN") && ROLE_DOWN[member.role] && (member.role !== "ADMIN" || isAtLeast("OWNER")) && (
+                      <button
+                        className="actionButton"
+                        onClick={() => setPendingRoleChange({ userId: member.id, username: member.username, currentRole: member.role, action: "DEMOTE" })}
+                      >
+                        Demote
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

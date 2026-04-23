@@ -11,6 +11,7 @@ export default function ElevatedUsersPage() {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (user === undefined) return;
     if (!isAtLeastSiteRole(user?.userRole, "MODERATOR")) router.replace("/rooms");
   }, [user, router]);
 

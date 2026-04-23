@@ -34,9 +34,12 @@ export type BannedUserDTO = {
 };
 
 export type UserRoleDTO = {
-  userId: string;
-  role: UserRole;
+  id: string;
+  action: UserRoleAction;
 };
+
+export const USER_ROLE_ACTIONS = ["PROMOTE", "DEMOTE"] as const;
+export type UserRoleAction = (typeof USER_ROLE_ACTIONS)[number];
 
 export type BanUserDTO = {
   userId: string;

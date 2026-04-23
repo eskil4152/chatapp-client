@@ -53,7 +53,7 @@ export default function FindUser() {
     setActionPending("promote");
     setActionError(null);
     try {
-      await changeUserRole({ userId: user.id, role: newRole });
+      await changeUserRole({ id: user.id, action: "PROMOTE" });
       setUser({ ...user, role: newRole });
     } catch {
       setActionError("Failed to promote user.");

@@ -19,6 +19,8 @@
 }
 
 .mark {
+  width: clamp(40px, 5vw, 72px);
+  height: auto;
   animation: breathe 1.6s ease-in-out infinite;
 }
 
@@ -32,3 +34,4 @@
   color: rgba(255, 255, 255, 0.68);
   letter-spacing: 0.02em;
 }
+

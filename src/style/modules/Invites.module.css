@@ -44,8 +44,19 @@
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     border: 1px solid var(--border-soft);
-    z-index: 100;
+    z-index: 200;
     overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .panel {
+        position: fixed;
+        top: auto;
+        bottom: 72px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+    }
 }
 
 .tabs {

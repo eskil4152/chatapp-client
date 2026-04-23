@@ -42,6 +42,7 @@ function ChatClientInner({ roomId }: { roomId: string }) {
   const { user } = useAuth();
 
   const [message, setMessage] = useState("");
+  const [atTop, setAtTop] = useState(false);
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -96,6 +97,14 @@ function ChatClientInner({ roomId }: { roomId: string }) {
     el.scrollTop = el.scrollHeight;
   }, [messages, typingUser]);
 
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    const handleScroll = () => setAtTop(el.scrollTop === 0);
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const status: "CONNECTING" | "JOINING" | "READY" | "ERROR" = error
     ? "ERROR"
     : !connected
@@ -148,8 +157,8 @@ function ChatClientInner({ roomId }: { roomId: string }) {
 
         <ChatStatus status={status} error={combinedError} />
 
-        {status === "READY" && hasMore && (
-          <div style={{ marginBottom: "0.75rem" }}>
+        {status === "READY" && hasMore && atTop && (
+          <div style={{ marginBottom: "0.75rem", display: "flex", justifyContent: "center" }}>
             <button
               type="button"
               className="primaryButton"

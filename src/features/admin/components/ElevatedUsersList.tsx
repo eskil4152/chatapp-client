@@ -43,7 +43,7 @@ export default function ElevatedUsersList() {
     setPending(user.userId + direction);
     setActionError(null);
     try {
-      await changeUserRole({ userId: user.userId, role: newRole });
+      await changeUserRole({ id: user.userId, action: direction === "up" ? "PROMOTE" : "DEMOTE" });
       await reload();
     } catch {
       setActionError("Failed to update role.");

@@ -11,6 +11,7 @@ export default function AdminPage() {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (user === undefined) return;
     if (!isAtLeastSiteRole(user?.userRole, "MODERATOR")) {
       router.replace("/rooms");
     }

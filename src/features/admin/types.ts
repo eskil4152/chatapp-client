@@ -34,8 +34,48 @@ export type BannedUserDTO = {
 };
 
 export type UserRoleDTO = {
-  userId: string;
-  role: UserRole;
+  id: string;
+  action: UserRoleAction;
+};
+
+export const USER_ROLE_ACTIONS = ["PROMOTE", "DEMOTE"] as const;
+export type UserRoleAction = (typeof USER_ROLE_ACTIONS)[number];
+
+export type SiteInfoDTO = {
+  connectedUsers: number;
+  totalSessions: number;
+  activeRooms: number;
+  totalUsers: number;
+  totalRooms: number;
+  bannedUsers: number;
+};
+
+export type HttpStatusCount = {
+  status: number;
+  count: number;
+};
+
+export type HttpEndpointMetric = {
+  uri: string;
+  method: string;
+  statuses: HttpStatusCount[];
+  totalCount: number;
+  errorRate: number;
+  meanMs: number;
+  maxMs: number;
+};
+
+export type AdvancedSiteInfoDTO = {
+  jvmMemoryUsedMb: number;
+  jvmMemoryMaxMb: number;
+  jvmMemoryCommittedMb: number;
+  jvmThreadsLive: number;
+  jvmThreadsPeak: number;
+  cpuUsagePercent: number;
+  gcPauseMeanMs: number;
+  gcPauseMaxMs: number;
+  uptimeSeconds: number;
+  httpRequests: HttpEndpointMetric[];
 };
 
 export type BanUserDTO = {

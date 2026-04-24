@@ -1,4 +1,4 @@
-# chatapp — web client
+<img src="./public/images/logo.png" alt="Logo" width="149">
 
 Web frontend for chatapp, a real-time chat application. Built with Next.js 16 and React 19, communicating with the chatapp server over HTTP REST and WebSocket.
 

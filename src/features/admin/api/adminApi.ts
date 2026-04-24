@@ -1,7 +1,9 @@
 import {
+  AdvancedSiteInfoDTO,
   BanUserDTO,
   BannedUserDTO,
   ElevatedUserDTO,
+  SiteInfoDTO,
   UserDetailDTO,
   UserIdDTO,
   UserRoleDTO,
@@ -55,4 +57,12 @@ export function getBannedUsers(
   size: number,
 ): Promise<BannedUserDTO[]> {
   return apiFetch(`${base()}/api/admin/banned?page=${page}&size=${size}`);
+}
+
+export function getSiteInfo(): Promise<SiteInfoDTO> {
+  return apiFetch(`${base()}/api/admin/site-info`);
+}
+
+export function getAdvancedSiteInfo(): Promise<AdvancedSiteInfoDTO> {
+  return apiFetch(`${base()}/api/admin/advanced-site-info`);
 }

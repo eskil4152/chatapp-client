@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getUser,
   changeUserRole,
@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/src/shared/providers/AuthProvider";
 import { SITE_ROLES, UserRole } from "@/src/shared/lib/userRole";
 import { UserDetailDTO } from "@/src/features/admin/types";
+import styles from "@/src/style/modules/InviteToast.module.css";
 
 export default function FindUser() {
   const { user: authUser } = useAuth();
@@ -22,6 +23,13 @@ export default function FindUser() {
   const [showBanForm, setShowBanForm] = useState(false);
   const [actionPending, setActionPending] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!successToast) return;
+    const timer = setTimeout(() => setSuccessToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [successToast]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -55,6 +63,7 @@ export default function FindUser() {
     try {
       await changeUserRole({ id: user.id, action: "PROMOTE" });
       setUser({ ...user, role: newRole });
+      setSuccessToast(`${user.username} promoted to ${newRole}.`);
     } catch {
       setActionError("Failed to promote user.");
     } finally {
@@ -68,10 +77,11 @@ export default function FindUser() {
     setActionError(null);
     try {
       await banUser({ userId: user.id, reason: banReason || undefined });
+      const username = user.username;
       setUser(null);
       setShowBanForm(false);
       setBanReason("");
-      setFetchError("User has been banned.");
+      setSuccessToast(`${username} has been banned.`);
     } catch {
       setActionError("Failed to ban user.");
     } finally {
@@ -85,6 +95,17 @@ export default function FindUser() {
 
   return (
     <div>
+      {successToast && (
+        <div className={styles.toast}>
+          <div className={styles.content}>
+            <p style={{ margin: 0 }}>{successToast}</p>
+          </div>
+          <button className={styles.close} onClick={() => setSuccessToast(null)}>
+            ×
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSearch} className="formStack">
         <input
           className="input"
@@ -163,14 +184,15 @@ export default function FindUser() {
               {canPromote && (
                 <button
                   className="secondaryButton"
-                  disabled={actionPending === "promote"}
+                  disabled={actionPending !== null}
                   onClick={handlePromote}
                 >
-                  Promote
+                  {actionPending === "promote" ? "Promoting…" : "Promote"}
                 </button>
               )}
               <button
                 className="dangerButton"
+                disabled={actionPending !== null}
                 onClick={() => setShowBanForm((v) => !v)}
               >
                 Ban
@@ -191,7 +213,7 @@ export default function FindUser() {
                 disabled={actionPending === "ban"}
                 onClick={handleBan}
               >
-                Confirm Ban
+                {actionPending === "ban" ? "Banning…" : "Confirm Ban"}
               </button>
             </div>
           )}

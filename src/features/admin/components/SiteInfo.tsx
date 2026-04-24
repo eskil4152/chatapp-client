@@ -134,6 +134,8 @@ export default function SiteInfo() {
                     <th style={{ padding: "6px 12px", fontWeight: 500 }}>Method</th>
                     <th style={{ padding: "6px 12px", fontWeight: 500 }}>Status</th>
                     <th style={{ padding: "6px 12px", fontWeight: 500 }}>Count</th>
+                    <th style={{ padding: "6px 12px", fontWeight: 500 }}>Total</th>
+                    <th style={{ padding: "6px 12px", fontWeight: 500 }}>Error rate</th>
                     <th style={{ padding: "6px 12px", fontWeight: 500 }}>Mean</th>
                     <th style={{ padding: "6px 12px", fontWeight: 500 }}>Max</th>
                   </tr>
@@ -152,6 +154,8 @@ export default function SiteInfo() {
                         <td style={{ padding: "8px 12px" }}>{s.count}</td>
                         {j === 0 ? (
                           <>
+                            <td rowSpan={r.statuses.length} style={{ padding: "8px 12px", verticalAlign: "top" }}>{r.totalCount}</td>
+                            <td rowSpan={r.statuses.length} style={{ padding: "8px 12px", verticalAlign: "top", color: r.errorRate > 0 ? "var(--error-text)" : undefined }}>{r.errorRate === 0 ? "—" : `${r.errorRate.toFixed(1)}%`}</td>
                             <td rowSpan={r.statuses.length} style={{ padding: "8px 12px", verticalAlign: "top" }}>{r.meanMs === 0 ? "—" : `${r.meanMs.toFixed(1)} ms`}</td>
                             <td rowSpan={r.statuses.length} style={{ padding: "8px 12px", verticalAlign: "top" }}>{r.maxMs === 0 ? "—" : `${r.maxMs.toFixed(1)} ms`}</td>
                           </>

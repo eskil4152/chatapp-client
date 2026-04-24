@@ -59,6 +59,8 @@ export type HttpEndpointMetric = {
   uri: string;
   method: string;
   statuses: HttpStatusCount[];
+  totalCount: number;
+  errorRate: number;
   meanMs: number;
   maxMs: number;
 };

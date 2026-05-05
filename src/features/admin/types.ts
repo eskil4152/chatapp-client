@@ -1,7 +1,7 @@
 import { UserRole } from "@/src/shared/lib/userRole";
 
 export type ElevatedUserDTO = {
-  userId: string;
+  id: string;
   username: string;
   role: UserRole;
 };

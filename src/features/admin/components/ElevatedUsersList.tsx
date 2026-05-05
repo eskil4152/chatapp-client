@@ -40,10 +40,13 @@ export default function ElevatedUsersList() {
     const newRole =
       direction === "up" ? SITE_ROLES[idx + 1] : SITE_ROLES[idx - 1];
     if (!newRole) return;
-    setPending(user.userId + direction);
+    setPending(user.id + direction);
     setActionError(null);
     try {
-      await changeUserRole({ id: user.userId, action: direction === "up" ? "PROMOTE" : "DEMOTE" });
+      await changeUserRole({
+        id: user.id,
+        action: direction === "up" ? "PROMOTE" : "DEMOTE",
+      });
       await reload();
     } catch {
       setActionError("Failed to update role.");
@@ -105,7 +108,7 @@ export default function ElevatedUsersList() {
             const canPromote = canModify && targetRank + 1 < SITE_ROLES.length;
             const canDemote = canModify && targetRank > 0;
             return (
-              <div key={user.userId} className="adminUserRow">
+              <div key={user.id} className="adminUserRow">
                 <div>
                   <span className="itemName">{user.username}</span>
                   <span className="adminRoleBadge">{user.role}</span>
@@ -115,7 +118,7 @@ export default function ElevatedUsersList() {
                     {canPromote && (
                       <button
                         className="secondaryButton"
-                        disabled={pending === user.userId + "up"}
+                        disabled={pending === user.id + "up"}
                         onClick={() => handleRoleChange(user, "up")}
                       >
                         Promote
@@ -124,7 +127,7 @@ export default function ElevatedUsersList() {
                     {canDemote && (
                       <button
                         className="dangerButton"
-                        disabled={pending === user.userId + "down"}
+                        disabled={pending === user.id + "down"}
                         onClick={() => handleRoleChange(user, "down")}
                       >
                         Demote

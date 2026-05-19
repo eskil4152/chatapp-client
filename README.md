@@ -14,8 +14,10 @@ Web frontend for chatapp, a real-time chat application. Built with Next.js 16 an
 - [WebSocket events](#websocket-events)
 - [Providers](#providers)
 - [Auth flow](#auth-flow)
+- [Site roles](#site-roles)
 - [Rooms](#rooms)
 - [Friends and invites](#friends-and-invites)
+- [Admin panel](#admin-panel)
 - [Encryption](#encryption)
 - [Error handling](#error-handling)
 - [Styling and theming](#styling-and-theming)
@@ -32,12 +34,15 @@ Web frontend for chatapp, a real-time chat application. Built with Next.js 16 an
 - **Real-time presence** — live online/offline status for friends and room members over WebSocket
 - **Invite toasts** — incoming friend and room invites appear as dismissible toasts with inline Accept/Decline
 - **Accepted notifications** — toast confirmation when someone accepts your friend request
+- **Message notifications** — toast when a message arrives in a room you are not currently viewing; shows sender, room name, and a 40-character preview; clicking navigates to that room
 - **Open invites** — shareable invite codes with configurable usage limits, manageable from the room management page
 - **Encrypted rooms** — rooms can be flagged as encrypted at creation time
 - **Pagination** — chat history loads in pages of 25 with a "Load older messages" button
 - **Typing indicator** — animated three-dot bubble appears when another user is typing; auto-clears after 4 seconds of inactivity or immediately when the message is sent; guarded against cross-room bleed during room transitions
 - **Loading overlay** — full-screen animated overlay shown during data fetches on friends, rooms, chat, login, profile, and friend detail pages
 - **Offline handling** — automatic WebSocket reconnect with exponential back-off; dedicated server-offline page with auto-polling
+- **Site info** — live server statistics available to TRUSTED+ users; ADMIN+ users can additionally load JVM and HTTP endpoint metrics
+- **Admin panel** — MODERATOR+ users can look up any account, manage site-wide roles, ban/unban users, and view the global ban list
 
 ---
 
@@ -102,6 +107,7 @@ src/
     (public)/          # Unauthenticated routes — no header, no socket
     (protected)/       # Authenticated routes — header, socket, providers
   features/
+    admin/             # Site info, user lookup, ban list, elevated users
     auth/              # Login, register, home check
     chat/              # Chat page, message history, room session hook
     friends/           # Friends list, friend info, add friend
@@ -111,8 +117,8 @@ src/
   shared/
     components/        # Reusable UI (ConfirmPopup, ConnectionIndicator, InviteToast, …)
     hooks/             # useLoading
-    lib/               # fetchJSON, formatTimestamp
-    providers/         # AppSocketProvider, FriendPresenceProvider, InviteProvider
+    lib/               # fetchJSON, formatTimestamp, userRole
+    providers/         # AppSocketProvider, AuthProvider, FriendPresenceProvider, InviteProvider
     types/             # WS event types, shared types
   style/
     globals.css        # Design tokens, resets, global utility classes
@@ -138,19 +144,26 @@ These are accessible without a session and render without the app header or WebS
 
 All protected routes enforce authentication via 401 redirect — any API call returning 401 sends the user to `/login`.
 
-| Route            | Description                                                                                                                                                                                                                                                                                        |
-|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/rooms`         | Room list in three sections: **Managed** (roles OWNER/ADMIN/MODERATOR), **Joined** (MEMBER), **Private** (DM rooms). Removes rooms in real time on `ROOM_DELETED` WS event.                                                                                                                        |
-| `/rooms/make`    | Create a new room. Supports an encryption toggle.                                                                                                                                                                                                                                                  |
-| `/rooms/join`    | Join a room using an open invite code.                                                                                                                                                                                                                                                             |
-| `/rooms/edit`    | Rename a room or delete it. OWNER-only in practice.                                                                                                                                                                                                                                                |
-| `/rooms/manage`  | Full room management page. Sections are role-gated — see [Rooms](#rooms).                                                                                                                                                                                                                          |
-| `/chat`          | Chat view. Query param `?id=`. Joins the room over WebSocket, loads paginated history, renders live messages, shows a typing indicator when another member is typing, and shows a member sidebar with avatars and online dots. |
-| `/friends`       | Friends list. Shows online status from `FriendPresenceProvider`. Refreshes automatically on `INVITE_ACCEPTED`, `FRIEND_ADDED`, `FRIEND_REMOVED` WS events.                                                                                                                                         |
-| `/friends/add`   | Send a friend request by username.                                                                                                                                                                                                                                                                 |
-| `/friends/info`  | Friend profile view. Query param `?userId=`. Shows avatar (with online/offline dot), username, full name, bio, email, birthday, and "Friends since" date. Has "Remove friend" with a confirmation popup. Redirects to `/friends` automatically if a `FRIEND_REMOVED` WS event fires for that user. |
-| `/user`          | Own profile. Edit bio, email, full name, avatar URL inline. Also log out and delete account (with confirmation).                                                                                                                                                                                   |
-| `/user/password` | Change password form (old + new password).                                                                                                                                                                                                                                                         |
+| Route                     | Min role    | Description                                                                                                                                                                                                                                                                                        |
+|---------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/rooms`                  | —           | Room list in three sections: **Managed** (roles OWNER/ADMIN/MODERATOR), **Joined** (MEMBER), **Private** (DM rooms). Removes rooms in real time on `ROOM_DELETED` WS event.                                                                                                                        |
+| `/rooms/make`             | —           | Create a new room. Supports an encryption toggle.                                                                                                                                                                                                                                                  |
+| `/rooms/join`             | —           | Join a room using an open invite code.                                                                                                                                                                                                                                                             |
+| `/rooms/edit`             | —           | Rename a room or delete it. OWNER-only in practice.                                                                                                                                                                                                                                                |
+| `/rooms/manage`           | —           | Full room management page. Sections are role-gated — see [Rooms](#rooms).                                                                                                                                                                                                                          |
+| `/chat`                   | —           | Chat view. Query param `?id=`. Joins the room over WebSocket, loads paginated history, renders live messages, shows a typing indicator when another member is typing, and shows a member sidebar with avatars and online dots. |
+| `/friends`                | —           | Friends list. Shows online status from `FriendPresenceProvider`. Refreshes automatically on `INVITE_ACCEPTED`, `FRIEND_ADDED`, `FRIEND_REMOVED` WS events.                                                                                                                                         |
+| `/friends/add`            | —           | Send a friend request by username.                                                                                                                                                                                                                                                                 |
+| `/friends/info`           | —           | Friend profile view. Query param `?userId=`. Shows avatar (with online/offline dot), username, full name, bio, email, birthday, and "Friends since" date. Has "Remove friend" with a confirmation popup. Redirects to `/friends` automatically if a `FRIEND_REMOVED` WS event fires for that user. |
+| `/user`                   | —           | Own profile. Edit bio, email, full name, avatar URL inline. Also log out and delete account (with confirmation).                                                                                                                                                                                   |
+| `/user/password`          | —           | Change password form (old + new password).                                                                                                                                                                                                                                                         |
+| `/site-info`              | `TRUSTED`   | Live server statistics: connected users, total sessions, active rooms, total users, total rooms, banned users count. ADMIN+ can additionally load advanced metrics — see [Admin panel](#admin-panel).                                                                                               |
+| `/admin`                  | `MODERATOR` | Admin hub with links to the three administrative sub-pages.                                                                                                                                                                                                                                        |
+| `/admin/elevated-users`   | `MODERATOR` | Paginated list of all accounts with a role above USER. Supports promote and demote actions (only on users with a lower site role than your own). Page size toggle: 25 / 50 / 100.                                                                                                                   |
+| `/admin/find-user`        | `MODERATOR` | Look up any account by username. Displays profile details, role, joined date, and room count. Supports inline promote and ban (with optional reason) — restricted to users with a lower role than your own.                                                                                         |
+| `/admin/ban-list`         | `MODERATOR` | Paginated global ban list. Shows banned username, banned-by username, timestamp, and optional reason. Supports unban. Requires confirmation for the unban action.                                                                                                                                   |
+
+The header renders `ElevatedNav` links to `/site-info` (TRUSTED+) and `/admin` (MODERATOR+) automatically. Users below the required role are redirected to `/rooms` on page load.
 
 ---
 
@@ -191,14 +204,15 @@ All WebSocket traffic goes through a single persistent connection managed by `Ap
 | `PENDING_INVITES`                                     | `InviteProvider`         | Replace full pending invite list (sent by server on connect)                |
 | `INVITE_RECEIVED`                                     | `InviteProvider`         | Show incoming invite toast for 4 seconds                                    |
 | `INVITE_ACCEPTED`                                     | `InviteProvider`         | Show accepted confirmation toast for 4 seconds                              |
+| `MESSAGE_NOTIFICATION`                                | `MessageNotificationToast` | Show a clickable toast for 4 seconds when a message arrives in a room the user is not currently viewing; clicking navigates to that room |
 | `TYPING`                                              | `useTypingIndicator`     | Show typing indicator bubble in chat; filtered by `roomId` to prevent cross-room bleed |
 
 ---
 
 ## Providers
 
-Three providers are mounted in the protected layout, nested in this order:
-`AppSocketProvider` → `FriendPresenceProvider` → `InviteProvider`.
+Four providers are mounted in the protected layout, nested in this order:
+`AppSocketProvider` → `AuthProvider` → `FriendPresenceProvider` → `InviteProvider`.
 
 ### AppSocketProvider
 
@@ -207,6 +221,14 @@ Manages the single shared WebSocket connection. On disconnect it reconnects with
 **Context:** `{ connected, error, sendJson, subscribe }`
 
 `subscribe(listener)` registers a callback that receives every inbound WS message and returns an unsubscribe function — used as a `useEffect` cleanup. All other WS consumers (providers, hooks, pages) use this pattern.
+
+### AuthProvider
+
+Fetches and caches the authenticated user's profile (including their `userRole`) from `GET /api/user` on mount. Exposes the user object and a reload function.
+
+**Context:** `{ user, reloadUser }`
+
+`user` is `undefined` while loading and `null` if the request fails. The `userRole` field drives all site-role permission checks via `isAtLeastSiteRole`.
 
 ### FriendPresenceProvider
 
@@ -236,6 +258,24 @@ The `pendingCount` drives the badge on the Invites header button. Both toasts ar
 6. **Logout:** `POST /api/logout`, then redirect to `/login`. Found in the user profile page.
 
 There is no Next.js middleware. Auth protection relies entirely on API responses — a direct navigation to a protected URL will show loading UI briefly before the first 401 redirects.
+
+---
+
+## Site roles
+
+Site roles are a server-side, account-level hierarchy that gates access to administrative features. The client reads the role from `AuthProvider`'s `user.userRole` and uses `isAtLeastSiteRole` (`src/shared/lib/userRole.ts`) for all checks.
+
+`USER` < `TRUSTED` < `MODERATOR` < `ADMIN` < `SUPERUSER`
+
+| Role        | Access granted                                                                              |
+|-------------|---------------------------------------------------------------------------------------------|
+| `USER`      | All standard features (chat, friends, rooms, profile)                                       |
+| `TRUSTED`   | `/site-info` — basic live server statistics                                                 |
+| `MODERATOR` | `/admin` hub — elevated user list, user lookup with promote/ban, global ban list           |
+| `ADMIN`     | Advanced site info (JVM metrics, HTTP endpoint table) on `/site-info`; can promote up to ADMIN |
+| `SUPERUSER` | Can promote/demote any role below SUPERUSER                                                 |
+
+All site role checks are purely client-side guards that hide UI and redirect on load. The server enforces the same rules independently.
 
 ---
 
@@ -300,6 +340,45 @@ On WebSocket connect the server pushes a `PENDING_INVITES` snapshot. The "Invite
 ### Presence
 
 The `OnlineFriendsRail` (left sidebar column on all protected pages) shows circular avatars for all currently online friends. Clicking an avatar navigates to their profile at `/friends/info`. Friend cards on the friends list show a green/grey status dot. The friend info page shows a larger status dot overlaid on the profile avatar.
+
+---
+
+## Admin panel
+
+The admin panel is available to MODERATOR+ users and is reachable via the "Administrative" link in the header (rendered conditionally by `ElevatedNav`).
+
+### Site Info (`/site-info`, TRUSTED+)
+
+Displays live server statistics fetched from `GET /api/admin/site-info`:
+
+| Stat             | Description                         |
+|------------------|-------------------------------------|
+| Connected users  | Current open WebSocket connections  |
+| Total sessions   | All active HTTP sessions            |
+| Active rooms     | Rooms with at least one joined user |
+| Total users      | All registered accounts             |
+| Total rooms      | All rooms in the database           |
+| Banned users     | Number of globally banned accounts  |
+
+ADMIN+ users see an "Advanced Site Info" button that loads `GET /api/admin/advanced-site-info` on demand:
+
+**JVM section:** memory used / committed / max (MB), live and peak thread counts, CPU usage %, GC pause mean and max (ms), server uptime.
+
+**HTTP Requests table:** per-endpoint breakdown of URI, method, status codes, total request count, error rate, mean and max response time.
+
+### Elevated Users (`/admin/elevated-users`, MODERATOR+)
+
+Lists every account with a site role above USER. Each row shows the username and role badge. Users with a lower rank than your own can be promoted or demoted one step at a time. Pagination toggle: 25 / 50 / 100 per page.
+
+### Find User (`/admin/find-user`, MODERATOR+)
+
+Search any account by username. On match, displays avatar, username, role badge, email, full name, bio, join date, and room count. If the found account's role is lower than your own, you can:
+- **Promote** — advance the account one step up the site role hierarchy.
+- **Ban** — globally ban the account with an optional reason.
+
+### Ban List (`/admin/ban-list`, MODERATOR+)
+
+Paginated list of all globally banned accounts. Each row shows the banned username, the moderator who issued the ban, the timestamp, and the optional reason. An **Unban** action is available per row, guarded by a confirmation popup.
 
 ---
 
@@ -386,9 +465,17 @@ Manages the full WS lifecycle for a chat room — sending JOIN on mount, LEAVE o
 
 Subscribes to `TYPING` WS events for the current room and returns the username of whoever is currently typing (or `null`). Auto-clears after 4 seconds of inactivity, clears immediately on `MESSAGE` from the same user, and filters by `roomId` to prevent stale events from a previous room showing up during transitions. Throttled on the send side to once per 2 seconds.
 
+### `isAtLeastSiteRole` (`src/shared/lib/userRole.ts`)
+
+Utility that compares a user's site role against a required minimum. Used by `ElevatedNav`, `SiteInfo`, and every admin page to gate rendering and redirect unauthorized users. The role order is `USER < TRUSTED < MODERATOR < ADMIN < SUPERUSER`.
+
 ### `LoadingOverlay` (`src/features/chat/components/LoadingOverlay.tsx`)
 
 Full-screen backdrop overlay with an animated app logo. Accepts a `visible` prop. Used on friends, rooms, chat, login, profile, and friend detail pages to cover the UI while data is loading.
+
+### `MessageNotificationToast` (`src/shared/components/MessageNotificationToast.tsx`)
+
+Subscribes to `MESSAGE_NOTIFICATION` WS events and renders a toast when a message arrives in a room that is not the user's currently active room. The toast is clickable and navigates to the relevant room. Auto-dismisses after 4 seconds.
 
 ### `fetchJSON` (`src/shared/lib/fetchJSON.ts`)
 
@@ -404,34 +491,42 @@ Shows `HH:MM` for today's messages, `Mon DD, HH:MM` for older ones. Used in chat
 
 All requests include `credentials: "include"` for cookie-based auth.
 
-| Method | Path                         | Feature                                      |
-|--------|------------------------------|----------------------------------------------|
-| GET    | `/api/auth`                  | Session check                                |
-| POST   | `/api/login`                 | Login                                        |
-| POST   | `/api/logout`                | Logout                                       |
-| POST   | `/api/register`              | Register                                     |
-| GET    | `/api/user`                  | Get own profile                              |
-| PUT    | `/api/user/edit`             | Update profile                               |
-| PATCH  | `/api/user/edit/password`    | Change password                              |
-| DELETE | `/api/user/delete`           | Delete account                               |
-| GET    | `/api/rooms`                 | List joined rooms                            |
-| POST   | `/api/rooms/make`            | Create room                                  |
-| DELETE | `/api/rooms/leave`           | Leave room                                   |
-| PUT    | `/api/rooms/edit`            | Rename room                                  |
-| DELETE | `/api/rooms/delete`          | Delete room                                  |
-| POST   | `/api/rooms/action`          | Kick or ban a member                         |
-| POST   | `/api/rooms/changeRole`      | Promote or demote a member                   |
-| DELETE | `/api/rooms/unban`           | Unban a user                                 |
-| GET    | `/api/rooms/:roomId/members` | List room members                            |
-| GET    | `/api/rooms/:roomId/bans`    | List banned users                            |
-| POST   | `/api/rooms/dm`              | Open or get existing DM room                 |
-| GET    | `/api/chats/:roomId`         | Paginated message history (`?page=N&size=N`) |
-| GET    | `/api/friends`               | List friends                                 |
-| DELETE | `/api/friends/remove`        | Remove a friend                              |
-| GET    | `/api/friends/:userId`       | Get a friend's profile                       |
-| GET    | `/api/invites/pending`       | List pending invites                         |
-| GET    | `/api/invites/outgoing`      | List outgoing invites                        |
-| POST   | `/api/invites/friend`        | Send a friend request                        |
-| POST   | `/api/invites/room`          | Send a room invite                           |
-| POST   | `/api/invites/open`          | Create an open room invite                   |
-| POST   | `/api/invites/respond`       | Accept or decline an invite                  |
+| Method | Path                              | Min role    | Feature                                         |
+|--------|-----------------------------------|-------------|-------------------------------------------------|
+| GET    | `/api/auth`                       | —           | Session check                                   |
+| POST   | `/api/login`                      | —           | Login                                           |
+| POST   | `/api/logout`                     | —           | Logout                                          |
+| POST   | `/api/register`                   | —           | Register                                        |
+| GET    | `/api/user`                       | —           | Get own profile                                 |
+| PUT    | `/api/user/edit`                  | —           | Update profile                                  |
+| PATCH  | `/api/user/edit/password`         | —           | Change password                                 |
+| DELETE | `/api/user/delete`                | —           | Delete account                                  |
+| GET    | `/api/rooms`                      | —           | List joined rooms                               |
+| POST   | `/api/rooms/make`                 | —           | Create room                                     |
+| DELETE | `/api/rooms/leave`                | —           | Leave room                                      |
+| PUT    | `/api/rooms/edit`                 | —           | Rename room                                     |
+| DELETE | `/api/rooms/delete`               | —           | Delete room                                     |
+| POST   | `/api/rooms/action`               | —           | Kick or ban a member                            |
+| POST   | `/api/rooms/changeRole`           | —           | Promote or demote a member                      |
+| DELETE | `/api/rooms/unban`                | —           | Unban a user from a room                        |
+| GET    | `/api/rooms/:roomId/members`      | —           | List room members                               |
+| GET    | `/api/rooms/:roomId/bans`         | —           | List banned users in a room                     |
+| POST   | `/api/rooms/dm`                   | —           | Open or get existing DM room                    |
+| GET    | `/api/chats/:roomId`              | —           | Paginated message history (`?page=N&size=N`)    |
+| GET    | `/api/friends`                    | —           | List friends                                    |
+| DELETE | `/api/friends/remove`             | —           | Remove a friend                                 |
+| GET    | `/api/friends/:userId`            | —           | Get a friend's profile                          |
+| GET    | `/api/invites/pending`            | —           | List pending invites                            |
+| GET    | `/api/invites/outgoing`           | —           | List outgoing invites                           |
+| POST   | `/api/invites/friend`             | —           | Send a friend request                           |
+| POST   | `/api/invites/room`               | —           | Send a room invite                              |
+| POST   | `/api/invites/open`               | —           | Create an open room invite                      |
+| POST   | `/api/invites/respond`            | —           | Accept or decline an invite                     |
+| GET    | `/api/admin/site-info`            | `TRUSTED`   | Basic server statistics                         |
+| GET    | `/api/admin/advanced-site-info`   | `ADMIN`     | JVM, CPU, GC, and HTTP endpoint metrics         |
+| GET    | `/api/admin/users`                | `MODERATOR` | List all elevated users                         |
+| GET    | `/api/admin/user/:username`       | `MODERATOR` | Get any user's profile details                  |
+| POST   | `/api/admin/change-user-role`     | `MODERATOR` | Promote or demote a user's site role            |
+| POST   | `/api/admin/ban-user`             | `MODERATOR` | Globally ban a user (optional reason)           |
+| POST   | `/api/admin/unban-user`           | `MODERATOR` | Remove a global ban                             |
+| GET    | `/api/admin/banned`               | `MODERATOR` | Paginated global ban list (`?page=N&size=N`)    |
